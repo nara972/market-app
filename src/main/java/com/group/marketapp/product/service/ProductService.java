@@ -2,6 +2,7 @@ package com.group.marketapp.product.service;
 
 import com.group.marketapp.product.doamin.Product;
 import com.group.marketapp.product.dto.request.CreateProductRequestDto;
+import com.group.marketapp.product.dto.request.UpdateProductRequestDto;
 import com.group.marketapp.product.dto.response.ProductResponseDto;
 import com.group.marketapp.product.repository.ProductRepository;
 import lombok.RequiredArgsConstructor;
@@ -29,6 +30,17 @@ public class ProductService {
                 .build();
 
         productRepository.save(product);
+    }
+
+    public void updateProduct(UpdateProductRequestDto request){
+
+        Product product=productRepository.findById(request.getId())
+                .orElseThrow(IllegalArgumentException::new);
+
+        product.update(request);
+
+        productRepository.save(product);
+
     }
 
 }

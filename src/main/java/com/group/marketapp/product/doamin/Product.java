@@ -1,5 +1,6 @@
 package com.group.marketapp.product.doamin;
 
+import com.group.marketapp.product.dto.request.UpdateProductRequestDto;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
@@ -33,6 +34,12 @@ public class Product {
         this.price = price;
         this.stock = stock;
         this.isDeleted = isDeleted;
+    }
+
+    public void update(UpdateProductRequestDto requestDto){
+        this.name = requestDto.getName();
+        this.price = requestDto.getPrice();
+        this.stock = requestDto.getStock();
     }
 
 }
