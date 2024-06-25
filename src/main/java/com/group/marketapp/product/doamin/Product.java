@@ -22,6 +22,10 @@ public class Product {
 
     private boolean isDeleted;
 
+    public Product(){
+
+    }
+
     @Builder
     public Product(Long id, String name, int price, int stock, boolean isDeleted) {
         this.id = id;
