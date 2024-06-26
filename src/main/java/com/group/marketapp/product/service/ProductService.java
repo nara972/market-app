@@ -11,6 +11,9 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.List;
+import java.util.stream.Collectors;
+
 @Service
 @RequiredArgsConstructor
 public class ProductService {
@@ -23,6 +26,19 @@ public class ProductService {
                 .orElseThrow(IllegalArgumentException::new);
 
         return ProductResponseDto.of(product);
+
+    }
+
+    public List<ProductResponseDto> getProductCategory(Long id){
+
+        ProductCategory productCategory= categoryRepository.findById(id)
+                .orElseThrow(IllegalArgumentException::new);
+
+        List<Product> products= productRepository.findByProductCategory(productCategory);
+
+        return products.stream()
+                .map(ProductResponseDto::of)
+                .collect(Collectors.toList());
 
     }
 
@@ -58,5 +74,6 @@ public class ProductService {
     public void deleteProduct(Long id){
         productRepository.updateStateProduct(true,id);
     }
+
 
 }

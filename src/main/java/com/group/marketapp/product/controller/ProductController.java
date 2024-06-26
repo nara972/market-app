@@ -8,6 +8,8 @@ import com.group.marketapp.product.service.ProductService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
+
 @RestController
 @RequiredArgsConstructor
 public class ProductController {
@@ -17,6 +19,11 @@ public class ProductController {
     @GetMapping("/product/{id}")
     public ProductResponseDto getProduct(@PathVariable Long id){
         return productService.getProduct(id);
+    }
+
+    @GetMapping("/product/category/{id}")
+    public List<ProductResponseDto> getProductCategory(@PathVariable Long id){
+        return productService.getProductCategory(id);
     }
 
     @PostMapping("/product")
