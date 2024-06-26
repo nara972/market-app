@@ -1,5 +1,6 @@
 package com.group.marketapp.product.dto.request;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.Data;
 import org.springframework.web.service.annotation.GetExchange;
 
@@ -13,5 +14,8 @@ public class CreateProductRequestDto {
     private int stock;
 
     private boolean isDeleted;
+
+    @JsonProperty("product_category_id")
+    private Long categoryId;
 
 }
