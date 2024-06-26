@@ -7,6 +7,7 @@ import com.group.marketapp.product.dto.response.ProductResponseDto;
 import com.group.marketapp.product.repository.ProductRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 @Service
 @RequiredArgsConstructor
@@ -41,6 +42,10 @@ public class ProductService {
 
         productRepository.save(product);
 
+    }
+
+    public void deleteProduct(Long id){
+        productRepository.updateStateProduct(true,id);
     }
 
 }

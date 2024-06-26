@@ -1,10 +1,7 @@
 package com.group.marketapp.product.doamin;
 
 import com.group.marketapp.product.dto.request.UpdateProductRequestDto;
-import jakarta.persistence.Entity;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
+import jakarta.persistence.*;
 import lombok.Builder;
 import lombok.Getter;
 
@@ -21,6 +18,7 @@ public class Product {
 
     private int stock;
 
+    @Column(name = "is_deleted")
     private boolean isDeleted;
 
     public Product(){
