@@ -7,6 +7,8 @@ import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
+import java.util.Optional;
+
 public interface ProductRepository extends JpaRepository<Product, Long> {
 
 
@@ -14,5 +16,8 @@ public interface ProductRepository extends JpaRepository<Product, Long> {
     @Transactional
     @Query("update Product p set p.isDeleted =:isDeleted where p.id=:id")
     int updateStateProduct(@Param("isDeleted") boolean isDeleted, @Param("id") Long id);
+
+    @Query("select p from Product p where p.id =:id and p.isDeleted = false")
+    Optional<Product> findById(@Param("id") Long id);
 
 }
