@@ -1,7 +1,7 @@
 package com.group.marketapp.product.service;
 
-import com.group.marketapp.product.doamin.Product;
-import com.group.marketapp.product.doamin.ProductCategory;
+import com.group.marketapp.product.domain.Product;
+import com.group.marketapp.product.domain.ProductCategory;
 import com.group.marketapp.product.dto.request.CreateProductRequestDto;
 import com.group.marketapp.product.dto.request.UpdateProductRequestDto;
 import com.group.marketapp.product.dto.response.ProductResponseDto;
@@ -9,7 +9,6 @@ import com.group.marketapp.product.repository.ProductCategoryRepository;
 import com.group.marketapp.product.repository.ProductRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.stream.Collectors;

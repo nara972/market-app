@@ -1,7 +1,7 @@
 package com.group.marketapp.product.repository;
 
-import com.group.marketapp.product.doamin.Product;
-import com.group.marketapp.product.doamin.ProductCategory;
+import com.group.marketapp.product.domain.Product;
+import com.group.marketapp.product.domain.ProductCategory;
 import jakarta.transaction.Transactional;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;

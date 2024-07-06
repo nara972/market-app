@@ -24,7 +24,8 @@ public class User {
     private String address;
 
     @Builder
-    public User(String loginId, String password, String username, String address) {
+    public User(Long id,String loginId, String password, String username, String address) {
+        this.id = id;
         this.loginId = loginId;
         this.password = password;
         this.username = username;

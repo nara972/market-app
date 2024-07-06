@@ -1,6 +1,5 @@
 package com.group.marketapp.product.controller;
 
-import com.group.marketapp.product.doamin.Product;
 import com.group.marketapp.product.dto.request.CreateProductRequestDto;
 import com.group.marketapp.product.dto.request.UpdateProductRequestDto;
 import com.group.marketapp.product.dto.response.ProductResponseDto;

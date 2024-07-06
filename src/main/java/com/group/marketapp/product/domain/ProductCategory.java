@@ -1,4 +1,4 @@
-package com.group.marketapp.product.doamin;
+package com.group.marketapp.product.domain;
 
 import jakarta.persistence.*;
 import lombok.Getter;

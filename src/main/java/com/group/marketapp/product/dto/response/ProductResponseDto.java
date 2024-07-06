@@ -1,11 +1,8 @@
 package com.group.marketapp.product.dto.response;
 
-import com.group.marketapp.product.doamin.Product;
+import com.group.marketapp.product.domain.Product;
 import lombok.Builder;
 import lombok.Getter;
-
-import java.util.ArrayList;
-import java.util.List;
 
 @Getter
 public class ProductResponseDto {
