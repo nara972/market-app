@@ -32,6 +32,14 @@ public class Product {
 
     }
 
+    public int getStock(){
+        return stock;
+    }
+
+    public void setStock(int stock){
+        this.stock = stock;
+    }
+
     @Builder
     public Product(Long id, String name, int price, int stock, boolean isDeleted,ProductCategory productCategory) {
         this.id = id;
