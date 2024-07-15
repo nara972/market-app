@@ -4,14 +4,13 @@ import static com.group.marketapp.common.constant.SessionConstant.SESSION_ACTIVE
 import static com.group.marketapp.common.constant.SessionConstant.SESSION_ID;
 
 import com.group.marketapp.user.domain.LoginUser;
+import com.group.marketapp.user.domain.User;
 import com.group.marketapp.user.dto.request.CreateUserRequestDto;
 import com.group.marketapp.user.dto.request.LoginRequestDto;
 import com.group.marketapp.user.service.UserService;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequiredArgsConstructor
@@ -25,15 +24,19 @@ public class UserController {
     }
 
     @PostMapping("/login")
-    public void login(@RequestBody LoginRequestDto request, HttpServletRequest httprequest){
-        LoginUser loginUser = userService.loginUser(request);
-        httprequest.getSession(SESSION_ACTIVE).setAttribute(SESSION_ID,loginUser);
+    public String login(@RequestBody LoginRequestDto request){
+        boolean success = userService.loginUser(request);
+        return success ? "Login successful"  : "Login failed";
     }
 
     @PostMapping("/logout")
-    public void logout(HttpServletRequest httprequest){
-        httprequest.getSession(SESSION_ACTIVE).invalidate();
+    public String logout(@RequestBody LoginRequestDto request){
+        userService.logoutUser(request.getLoginId());
+        return "Logout successful";
     }
 
-
+    @GetMapping("/session/{loginId}")
+    public User getUserFromSession(@PathVariable String loginId){
+        return userService.getUserFromSession(loginId);
+    }
 }
