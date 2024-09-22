@@ -57,8 +57,11 @@ public class JwtTokenProvider {
                 .signWith(key, SignatureAlgorithm.HS256)
                 .compact();
 
+        log.info("Generated subject: {}", authentication.getName());
+
         // Refresh Token 생성
         String refreshToken = Jwts.builder()
+                .setSubject(authentication.getName())
                 .setExpiration(new Date(now + REFRESH_TOKEN_EXPIRE_TIME))
                 .signWith(key, SignatureAlgorithm.HS256)
                 .compact();
@@ -100,6 +103,24 @@ public class JwtTokenProvider {
         // UserDetails 객체를 만들어서 Authentication 리턴
         UserDetails principal = new User(claims.getSubject(), "", authorities);
         return new UsernamePasswordAuthenticationToken(principal, "", authorities);
+    }
+    
+    //토큰에서 로그인 ID를 추출하는 메서드
+    public String extractLoginId(String token){
+        try {
+            Claims claims = Jwts.parserBuilder()
+                    .setSigningKey(key)
+                    .build()
+                    .parseClaimsJws(token)
+                    .getBody();
+
+            String subject = claims.getSubject();
+            log.info("Extracted subject (loginId) from token: {}",subject);
+            return subject;
+        }catch (Exception e){
+            log.error("Failed to extract loginId from Jwt", e);
+            throw new IllegalArgumentException("Invalid JWT token");
+        }
     }
 
     // 토큰 정보를 검증하는 메서드
