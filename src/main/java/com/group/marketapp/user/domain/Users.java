@@ -3,6 +3,7 @@ package com.group.marketapp.user.domain;
 import jakarta.persistence.*;
 import lombok.Builder;
 import lombok.Getter;
+import lombok.Setter;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 
@@ -11,6 +12,7 @@ import java.util.List;
 
 @Entity
 @Getter
+@Setter
 public class Users implements UserDetails {
 
     @Id @GeneratedValue(strategy = GenerationType.IDENTITY)

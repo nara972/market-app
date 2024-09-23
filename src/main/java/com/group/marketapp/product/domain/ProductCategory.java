@@ -1,6 +1,7 @@
 package com.group.marketapp.product.domain;
 
 import jakarta.persistence.*;
+import lombok.Builder;
 import lombok.Getter;
 
 import java.util.ArrayList;
@@ -21,5 +22,11 @@ public class ProductCategory {
     private List<Product> product =new ArrayList<>();
 
     public ProductCategory() {}
+
+    @Builder
+    public ProductCategory(Long id, String name) {
+        this.id = id;
+        this.name = name;
+    }
 
 }

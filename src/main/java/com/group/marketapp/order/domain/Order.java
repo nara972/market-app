@@ -1,6 +1,6 @@
 package com.group.marketapp.order.domain;
 
-import com.group.marketapp.user.domain.User;
+import com.group.marketapp.user.domain.Users;
 import jakarta.persistence.*;
 import lombok.Builder;
 import lombok.Getter;
@@ -27,7 +27,7 @@ public class Order {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id", nullable = false)
-    private User user;
+    private Users user;
 
     @Enumerated(value = EnumType.STRING)
     private OrderStatus orderStatus;
@@ -39,7 +39,7 @@ public class Order {
     private LocalDateTime deliveredAt;
 
     @Builder
-    public Order(long id, String receiverName, String receiverAddress, User user, OrderStatus orderStatus, LocalDateTime deliveredAt) {
+    public Order(long id, String receiverName, String receiverAddress, Users user, OrderStatus orderStatus, LocalDateTime deliveredAt) {
         this.id = id;
         this.receiverName = receiverName;
         this.receiverAddress = receiverAddress;

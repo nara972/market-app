@@ -56,17 +56,17 @@ public class UserService {
     }
 
     /**
-    public boolean loginUser(LoginRequestDto request){
+     public boolean loginUser(LoginRequestDto request){
 
-        Users user = userRepository.findByLoginId(request.getLoginId())
-                .orElseThrow(()->new IllegalArgumentException("존재하지 않는 아이디입니다."));
+     Users user = userRepository.findByLoginId(request.getLoginId())
+     .orElseThrow(()->new IllegalArgumentException("존재하지 않는 아이디입니다."));
 
-        if(user.isPasswordEqual(request.getPassword())){
-           redisTemplate.opsForValue().set("USER_SESSION_" + user.getLoginId(), user);
-           return true;
-        }
-        return false;
-    }**/
+     if(user.isPasswordEqual(request.getPassword())){
+     redisTemplate.opsForValue().set("USER_SESSION_" + user.getLoginId(), user);
+     return true;
+     }
+     return false;
+     }**/
 
     public UserResponseDto loginUser(LoginRequestDto request){
 
@@ -80,7 +80,7 @@ public class UserService {
         UserResponseDto tokenInfo = jwtTokenProvider.generateToken(authentication);
 
         redisTemplate.opsForValue().set("RT:"+authentication.getName(),tokenInfo.getRefreshToken()
-        ,tokenInfo.getRefreshTokenExpirationTime(), TimeUnit.MILLISECONDS);
+                ,tokenInfo.getRefreshTokenExpirationTime(), TimeUnit.MILLISECONDS);
 
         //log.info("로그인시: {}", redisTemplate.opsForValue().get("RT:"+authentication.getName()));
 
@@ -90,9 +90,9 @@ public class UserService {
 
 
     /**
-    public void logoutUser(String loginId){
-        redisTemplate.delete("USER_SESSION_" + loginId);
-    }**/
+     public void logoutUser(String loginId){
+     redisTemplate.delete("USER_SESSION_" + loginId);
+     }**/
 
     public void logoutUser(String accessToken,String refreshToken){
 

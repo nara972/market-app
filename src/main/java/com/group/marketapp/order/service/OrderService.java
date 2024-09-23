@@ -8,6 +8,9 @@ import com.group.marketapp.order.repository.OrderProductRepository;
 import com.group.marketapp.order.repository.OrderRepository;
 import com.group.marketapp.product.domain.Product;
 import com.group.marketapp.product.repository.ProductRepository;
+import com.group.marketapp.user.domain.Users;
+import com.group.marketapp.user.repository.UserRepository;
+import com.group.marketapp.user.service.UserService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -21,10 +24,15 @@ public class OrderService {
     private final OrderRepository orderRepository;
     private final OrderProductRepository orderProductRepository;
     private final ProductRepository productRepository;
+    private final UserService userService;
+    private final UserRepository userRepository;
 
 
     @Transactional
-    public Long createOrder(CreateOrderRequestDto request,long userId){
+    public Long createOrder(CreateOrderRequestDto request,String loginId){
+
+        Users user = userRepository.findByLoginId(loginId)
+                .orElseThrow(()->new IllegalArgumentException("User not found"));
 
         //check product stock
         for(OrderProductRequestDto dto : request.getOrderProducts()){
@@ -36,7 +44,7 @@ public class OrderService {
             }
         }
 
-        Order order = request.toOrder(userId);
+        Order order = request.toOrder(user);
         order = orderRepository.save(order);
 
         System.out.println("order.getId() : " + order.getId());
