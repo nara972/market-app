@@ -42,4 +42,14 @@ public class CouponService {
         couponRepository.save(coupon);
     }
 
+    @Scheduled(cron = "0 0 12 * * *")
+    @Transactional
+    public void deactivateExpiredCoupons(){
+        List<Coupon> coupons = couponRepository.findAll();
+        for(Coupon coupon : coupons){
+            coupon.checkAndDeactivateIfExpired();
+        }
+        couponRepository.saveAll(coupons);
+    }
+
 }
