@@ -50,6 +50,7 @@ public class UserService {
                 .password(passwordEncoder.encode(request.getPassword()))
                 .username(request.getUsername())
                 .address(request.getAddress())
+                .role("ROLE_USER")
                 .build();
 
         userRepository.save(user);

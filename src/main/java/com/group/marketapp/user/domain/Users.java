@@ -30,14 +30,18 @@ public class Users implements UserDetails {
     @Column(length = 100, nullable = false)
     private String address;
 
+    private String role;
+
+
 
     @Builder
-    public Users(Long id, String loginId, String password, String username, String address) {
+    public Users(Long id, String loginId, String password, String username, String address,String role) {
         this.id = id;
         this.loginId = loginId;
         this.password = password;
         this.username = username;
         this.address = address;
+        this.role = role;
     }
 
     public Users() {

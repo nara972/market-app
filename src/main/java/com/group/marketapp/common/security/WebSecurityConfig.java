@@ -40,7 +40,8 @@ public class WebSecurityConfig {
                 )
                 .authorizeHttpRequests(authorize -> authorize
                                         .requestMatchers("/user/**","/login","/session/**","/logout"
-                                        ,"/product/**","/order/**").permitAll() // 특정 경로는 인증 없이 접근 가능
+                                        ,"/order/**").permitAll() // 특정 경로는 인증 없이 접근 가능
+                        .requestMatchers("/product/**","/coupon/**").hasRole("ADMIN")
                                         .anyRequest().authenticated() // 나머지 모든 요청은 인증 필요
                 )
                 .logout(logout->logout
