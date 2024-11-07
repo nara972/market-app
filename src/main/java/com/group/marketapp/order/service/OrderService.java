@@ -44,11 +44,14 @@ public class OrderService {
 
             Product product = productRepository.findById(dto.getProductId())
                     .orElseThrow(() -> new IllegalArgumentException("Product not found"));
+            if(product.getStock() < dto.getCount()){
+                throw new IllegalArgumentException("Insufficient stock");
+            }
 
             product.setStock(product.getStock() - dto.getCount());
             productRepository.save(product);
         }
-        
+
         for(OrderProduct orderProduct: orderProducts){
             orderProduct.setOrder(order);
             orderProductRepository.saveAll(orderProducts);
@@ -57,5 +60,16 @@ public class OrderService {
         return order.getId();
 
     }
+
+    public void cancelOrder(Long orderId){
+        Order order = orderRepository.findById(orderId)
+                .orElseThrow(()->new IllegalArgumentException("Order not found"));
+
+        order.cancelOrder();
+        orderRepository.save(order);
+    }
+
+
+
 
 }

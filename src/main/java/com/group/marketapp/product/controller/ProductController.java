@@ -5,6 +5,7 @@ import com.group.marketapp.product.dto.request.UpdateProductRequestDto;
 import com.group.marketapp.product.dto.response.ProductResponseDto;
 import com.group.marketapp.product.service.ProductService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;

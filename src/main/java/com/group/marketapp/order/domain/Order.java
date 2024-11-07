@@ -48,4 +48,8 @@ public class Order {
         this.deliveredAt = deliveredAt;
     }
 
+    public void cancelOrder(){
+        this.orderStatus = OrderStatus.CANCELED;
+    }
+
 }

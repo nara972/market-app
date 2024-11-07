@@ -2,6 +2,7 @@ package com.group.marketapp.order.dto.request;
 
 import com.group.marketapp.order.domain.Order;
 import com.group.marketapp.order.domain.OrderProduct;
+import com.group.marketapp.order.domain.OrderStatus;
 import com.group.marketapp.product.domain.Product;
 import com.group.marketapp.user.domain.Users;
 import lombok.Builder;
@@ -34,6 +35,7 @@ public class CreateOrderRequestDto {
                 .receiverName(receiverName)
                 .receiverAddress(receiverAddress)
                 .user(user) // 이미 영속된 Users 객체를 설정
+                .orderStatus(OrderStatus.PENDING)
                 .build();
     }
 
