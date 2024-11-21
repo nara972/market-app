@@ -19,6 +19,11 @@ public class Coupon {
     @Column(length = 256, nullable = false)
     private String name;
 
+    @Enumerated(EnumType.STRING)
+    private CouponType couponType;
+
+    private Integer quantity;
+
     @Column(name = "expired_date")
     private LocalDateTime expiredDate;
 
@@ -36,8 +41,10 @@ public class Coupon {
     }
 
     @Builder
-    public Coupon(String name, LocalDateTime expiredDate, boolean isActive, Integer minimumMoney, int discountPrice) {
+    public Coupon(String name, CouponType couponType, int quantity, LocalDateTime expiredDate, boolean isActive, Integer minimumMoney, int discountPrice) {
         this.name = name;
+        this.couponType = couponType;
+        this.quantity = quantity;
         this.expiredDate = expiredDate;
         this.minimumMoney = minimumMoney;
         this.discountPrice = discountPrice;
@@ -45,6 +52,7 @@ public class Coupon {
 
     public void update(UpdateCouponRequestDto dto){
         this.name=dto.getName();
+        this.quantity=dto.getQuantity();
         this.expiredDate=dto.getExpiredDate();
         this.isActive=dto.isActive();
         this.minimumMoney=dto.getMinimumMoney();
