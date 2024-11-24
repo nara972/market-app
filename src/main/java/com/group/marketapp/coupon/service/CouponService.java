@@ -11,12 +11,15 @@ import com.group.marketapp.coupon.repository.ReceivedCouponRepository;
 import com.group.marketapp.user.domain.Users;
 import com.group.marketapp.user.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
+import org.redisson.api.RLock;
+import org.redisson.api.RedissonClient;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
+import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
 @Service
@@ -27,6 +30,7 @@ public class CouponService {
     private final ReceivedCouponRepository receivedCouponRepository;
     private final UserRepository userRepository;
     private final RedisTemplate<String,Object> redisTemplate;
+    private final RedissonClient redissonClient;
     private static final String COUPON_QUEUE="coupon_queue";
 
     public void createCoupon(CreateCouponRequestDto request){
@@ -50,7 +54,8 @@ public class CouponService {
         //선착순 쿠폰일 경우 Redis 대기열에 추가
         if(request.getCouponType()==CouponType.FIRST_COME_FIRST_SERVE){
             for(int i=0;i<request.getQuantity();i++){
-                redisTemplate.opsForList().leftPush(COUPON_QUEUE,String.valueOf(coupon.getId()));
+                redisTemplate.opsForList()
+                        .leftPush(COUPON_QUEUE,String.valueOf(coupon.getId()));
             }
         }
     }
@@ -110,6 +115,15 @@ public class CouponService {
 
      Users user = userRepository.findByLoginId(loginId)
      .orElseThrow(()->new IllegalArgumentException("User not found"));
+
+     // Redis의 Set을 이용해 중복 수령 여부 확인
+     String redisKey = "coupon:issued:"+couponId;
+     Boolean isAlreadyIssued = redisTemplate.opsForSet().isMember(redisKey,loginId);
+     if(Boolean.TRUE.equals(isAlreadyIssued)){
+         throw new IllegalStateException("Coupon is already issued");
+     }
+
+     redisTemplate.opsForSet().add(redisKey,loginId);
 
      //ReceivedCoupon 엔티티에 저장
      ReceivedCoupon receivedCoupon = new ReceivedCoupon(coupon,user);
