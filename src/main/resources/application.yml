@@ -12,6 +12,8 @@ spring:
         show_sql: true
         format_sql: true
         dialect: org.hibernate.dialect.MySQL8Dialect
+        connection:
+          readOnly: false
   main:
     allow-bean-definition-overriding: true
 

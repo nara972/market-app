@@ -98,38 +98,56 @@ public class CouponService {
 
      //선착순 쿠폰 발급 메서드
      @Transactional
-     public CouponResponseDto issueCoupon(Long couponId,String loginId){
-     //Redis 대기열에서 쿠폰 ID를 꺼냄
-     Object queuedCouponId=redisTemplate.opsForList().rightPop(COUPON_QUEUE);
-     if(couponId==null){
-     throw new IllegalStateException("No coupons available for issuance.");
+     public CouponResponseDto issueCoupon(Long couponId, String loginId) {
+
+         String lockKey = "lock:coupon:" + couponId; // 락 키 생성
+         RLock lock = redissonClient.getLock(lockKey);
+
+         try {
+             if (lock.tryLock(5, 10, TimeUnit.SECONDS)) { // 5초 대기, 10초 유지
+                 try {
+                     // Redis 대기열에서 쿠폰 ID를 꺼냄
+                     Object queuedCouponId = redisTemplate.opsForList().rightPop(COUPON_QUEUE);
+                     if (queuedCouponId == null) {
+                         throw new IllegalStateException("No coupons available for issuance.");
+                     }
+
+                     // 쿠폰 ID를 사용해 데이터베이스에서 쿠폰을 조회하고 활성화 여부 확인
+                     Coupon coupon = couponRepository.findById(couponId)
+                             .orElseThrow(() -> new IllegalArgumentException("Coupon not found"));
+
+                     if (!coupon.isActive()) {
+                         throw new IllegalStateException("Coupon is not active");
+                     }
+
+                     Users user = userRepository.findByLoginId(loginId)
+                             .orElseThrow(() -> new IllegalArgumentException("User not found"));
+
+                     // Redis의 Set을 이용해 중복 수령 여부 확인
+                     String redisKey = "coupon:issued:" + couponId;
+                     Boolean isAlreadyIssued = redisTemplate.opsForSet().isMember(redisKey, loginId);
+                     if (Boolean.TRUE.equals(isAlreadyIssued)) {
+                         throw new IllegalStateException("Coupon is already issued");
+                     }
+
+                     // Redis에 발급 기록 추가
+                     redisTemplate.opsForSet().add(redisKey, loginId);
+
+                     // ReceivedCoupon 엔티티에 저장
+                     ReceivedCoupon receivedCoupon = new ReceivedCoupon(coupon, user);
+                     receivedCouponRepository.save(receivedCoupon);
+
+                     return CouponResponseDto.of(coupon);
+                 } finally {
+                     lock.unlock(); // 락 해제
+                 }
+             } else {
+                 throw new IllegalStateException("Could not acquire lock for coupon issuance");
+             }
+         } catch (InterruptedException e) {
+             throw new IllegalStateException("Thread interrupted while acquiring lock", e);
+         }
      }
-     //쿠폰ID를 사용해 데이터베이스에서 쿠폰을 조회하고 활성화 여부 확인
-     Coupon coupon = couponRepository.findById(couponId)
-     .orElseThrow(()->new IllegalArgumentException("Coupon not found"));
 
-
-     if(!coupon.isActive()){
-     throw new IllegalStateException("Coupon is not active");
-     }
-
-     Users user = userRepository.findByLoginId(loginId)
-     .orElseThrow(()->new IllegalArgumentException("User not found"));
-
-     // Redis의 Set을 이용해 중복 수령 여부 확인
-     String redisKey = "coupon:issued:"+couponId;
-     Boolean isAlreadyIssued = redisTemplate.opsForSet().isMember(redisKey,loginId);
-     if(Boolean.TRUE.equals(isAlreadyIssued)){
-         throw new IllegalStateException("Coupon is already issued");
-     }
-
-     redisTemplate.opsForSet().add(redisKey,loginId);
-
-     //ReceivedCoupon 엔티티에 저장
-     ReceivedCoupon receivedCoupon = new ReceivedCoupon(coupon,user);
-     receivedCouponRepository.save(receivedCoupon);
-
-     return CouponResponseDto.of(coupon);
-     }
 
 }

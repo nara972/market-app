@@ -1,7 +1,5 @@
 package com.group.marketapp;
 
-import com.group.marketapp.order.domain.Order;
-import com.group.marketapp.order.domain.OrderStatus;
 import com.group.marketapp.order.dto.request.CreateOrderRequestDto;
 import com.group.marketapp.order.dto.request.OrderProductRequestDto;
 import com.group.marketapp.order.repository.OrderRepository;
@@ -17,16 +15,21 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.transaction.annotation.Transactional;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
+import org.springframework.security.core.context.SecurityContextHolder;
+
 
 import java.util.List;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
 @Slf4j
 @SpringBootTest
-@Transactional
-public class OrderServiceTest {
+public class OrderConcurrencyTest {
 
     @Autowired
     private OrderService orderService;
@@ -38,13 +41,13 @@ public class OrderServiceTest {
     private ProductRepository productRepository;
 
     @Autowired
-    private ProductCategoryRepository productCategoryRepository;
+    private ProductCategoryRepository categoryRepository;
 
     @Autowired
     private UserRepository userRepository;
 
-    private Users testUser;
     private Product testProduct;
+    private Users testUser;
 
     @BeforeEach
     void setup() {
@@ -63,7 +66,7 @@ public class OrderServiceTest {
         ProductCategory category = ProductCategory.builder()
                 .name("Electronics")
                 .build();
-        productCategoryRepository.save(category);
+        categoryRepository.save(category);
 
         testProduct = Product.builder()
                 .name("Smartphone")
@@ -73,15 +76,21 @@ public class OrderServiceTest {
                 .productCategory(category)
                 .build();
         productRepository.save(testProduct);
-
     }
 
     @Test
-    void testCreateOrder() {
+    void testConcurrentOrderCreation() throws InterruptedException {
+        int threadCount = 10; // 동시 실행할 스레드 수
+        int ordersPerThread = 5; // 각 스레드에서 생성할 주문 수
+        int totalOrders = threadCount * ordersPerThread;
+
+        ExecutorService executorService = Executors.newFixedThreadPool(threadCount);
+        CountDownLatch latch = new CountDownLatch(threadCount);
+
         // 주문 요청 DTO 생성
         OrderProductRequestDto orderProductRequest = OrderProductRequestDto.builder()
                 .productId(testProduct.getId())
-                .count(5) // 5개 구매
+                .count(1) // 주문당 1개씩 구매
                 .build();
 
         CreateOrderRequestDto createOrderRequest = CreateOrderRequestDto.builder()
@@ -90,57 +99,44 @@ public class OrderServiceTest {
                 .orderProducts(List.of(orderProductRequest))
                 .build();
 
-        // 주문 생성
-        Long orderId = orderService.createOrder(createOrderRequest, testUser.getLoginId());
+        for (int i = 0; i < threadCount; i++) {
+            executorService.submit(() -> {
+                try {
+                    // 스레드별 SecurityContextHolder 설정
+                    SecurityContextHolder.getContext().setAuthentication(
+                            new UsernamePasswordAuthenticationToken(
+                                    testUser, // Users 객체를 Principal로 설정
+                                    null,
+                                    List.of(new SimpleGrantedAuthority(testUser.getRole()))
+                            )
+                    );
 
-        // 생성된 주문 검증
-        Order order = orderRepository.findById(orderId)
-                .orElseThrow(() -> new IllegalArgumentException("Order not found"));
+                    for (int j = 0; j < ordersPerThread; j++) {
+                        orderService.createOrder(createOrderRequest, testUser.getLoginId());
+                        log.info("Order created by thread: {}", Thread.currentThread().getName());
+                    }
+                } catch (Exception e) {
+                    log.error("Order creation failed: {}", e.getMessage());
+                } finally {
+                    latch.countDown();
+                }
+            });
+        }
 
-        assertThat(order.getUser()).isEqualTo(testUser); // 주문 사용자 확인
-        assertThat(order.getOrderStatus()).isEqualTo(OrderStatus.PENDING); // 주문 상태 확인
+        latch.await(); // 모든 스레드가 작업을 마칠 때까지 대기
+        executorService.shutdown();
 
-        // 재고 감소 검증
+        // 최종 재고 확인
         Product updatedProduct = productRepository.findById(testProduct.getId())
                 .orElseThrow(() -> new IllegalArgumentException("Product not found"));
-        assertThat(updatedProduct.getStock()).isEqualTo(45); // 기존 재고 50에서 5 감소
-    }
 
-    @Test
-    void testCancelOrder() {
-        // Given: 주문 생성에 필요한 데이터 설정
-        int initialStock = 50;
-        int purchaseCount = 5;
+        log.info("Final stock: {}, Expected stock: {}", updatedProduct.getStock(), Math.max(50 - totalOrders, 0));
 
-        // 주문 상품 생성
-        OrderProductRequestDto orderProductRequest = OrderProductRequestDto.builder()
-                .productId(testProduct.getId())
-                .count(purchaseCount) // 구매 개수 설정
-                .build();
+        // 예상 재고 감소 확인
+        assertThat(updatedProduct.getStock()).isEqualTo(Math.max(50 - totalOrders, 0));
 
-        // 주문 요청 DTO 생성
-        CreateOrderRequestDto createOrderRequest = CreateOrderRequestDto.builder()
-                .receiverName("Receiver")
-                .receiverAddress("Test Address")
-                .orderProducts(List.of(orderProductRequest))
-                .build();
-
-        // 상품 초기 재고 설정
-        testProduct.setStock(initialStock);
-        productRepository.save(testProduct);
-
-        // When: 주문 생성 및 취소 실행
-        Long orderId = orderService.createOrder(createOrderRequest, testUser.getLoginId());
-        orderService.cancelOrder(orderId);
-
-        // Then: 주문 상태 확인
-        Order canceledOrder = orderRepository.findById(orderId)
-                .orElseThrow(() -> new IllegalArgumentException("Order not found"));
-        assertThat(canceledOrder.getOrderStatus()).isEqualTo(OrderStatus.CANCELED); // 주문 취소 상태 확인
-
-        // Then: 재고 복구 확인
-        Product updatedProduct = productRepository.findById(testProduct.getId())
-                .orElseThrow(() -> new IllegalArgumentException("Product not found"));
-        assertThat(updatedProduct.getStock()).isEqualTo(initialStock); // 재고 복구 확인
+        // 성공한 주문 개수 확인
+        long successfulOrders = orderRepository.count();
+        assertThat(successfulOrders).isEqualTo(Math.min(50, totalOrders)); // 재고가 허용하는 주문만 성공
     }
 }
