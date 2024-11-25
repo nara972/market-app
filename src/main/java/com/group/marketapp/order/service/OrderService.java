@@ -12,11 +12,15 @@ import com.group.marketapp.user.domain.Users;
 import com.group.marketapp.user.repository.UserRepository;
 import com.group.marketapp.user.service.UserService;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
+import java.util.stream.Collectors;
 
+@Slf4j
 @RequiredArgsConstructor
 @Service
 public class OrderService {
@@ -27,12 +31,14 @@ public class OrderService {
     private final UserService userService;
     private final UserRepository userRepository;
 
+
     @Transactional
     public Long createOrder(CreateOrderRequestDto request,String loginId){
 
 
         Users user = userRepository.findByLoginId(loginId)
                 .orElseThrow(()->new IllegalArgumentException("User not found"));
+        log.info("Creating order for user: {}", user.getLoginId());
 
 
         Order order = request.toOrder(user);
@@ -42,34 +48,34 @@ public class OrderService {
 
         for(OrderProductRequestDto dto : request.getOrderProducts()){
 
-            Product product = productRepository.findById(dto.getProductId())
+            Product product = productRepository.findByIdWithLock(dto.getProductId())
                     .orElseThrow(() -> new IllegalArgumentException("Product not found"));
+            log.info("Processing product: {}, current stock: {}", product.getName(), product.getStock());
             if(product.getStock() < dto.getCount()){
                 throw new IllegalArgumentException("Insufficient stock");
             }
 
             product.setStock(product.getStock() - dto.getCount());
             productRepository.save(product);
+            log.info("Updated stock for product: {}, new stock: {}", product.getName(), product.getStock());
         }
 
         for(OrderProduct orderProduct: orderProducts){
             orderProduct.setOrder(order);
-            orderProductRepository.saveAll(orderProducts);
-        }
 
+        }
+        orderProductRepository.saveAll(orderProducts);
         return order.getId();
 
     }
 
-    public void cancelOrder(Long orderId){
+    public void cancelOrder(Long orderId) {
         Order order = orderRepository.findById(orderId)
-                .orElseThrow(()->new IllegalArgumentException("Order not found"));
+                .orElseThrow(() -> new IllegalArgumentException("Order not found"));
 
         order.cancelOrder();
+
         orderRepository.save(order);
     }
-
-
-
 
 }
