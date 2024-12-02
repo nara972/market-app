@@ -25,6 +25,9 @@ public interface ProductRepository extends JpaRepository<Product, Long> {
     @Query("select p from Product p where p.id =:id and p.isDeleted = false")
     Optional<Product> findByIdWithLock(@Param("id") Long id);
 
-    List<Product> findByProductCategoryIn(List<ProductCategory> productCategory);
+    @Query("SELECT p FROM Product p " +
+            "JOIN FETCH p.productCategory c " +
+            "WHERE c.id = :id OR c.parent.id = :id")
+    List<Product> findProductsByCategoryIdWithSubcategories(@Param("id") Long categoryId);
 
 }

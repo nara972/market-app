@@ -30,12 +30,7 @@ public class ProductService {
 
     public List<ProductResponseDto> getProductCategory(Long id){
 
-        ProductCategory productCategory= categoryRepository.findById(id)
-                .orElseThrow(IllegalArgumentException::new);
-
-        List<ProductCategory> productCategories = categoryRepository.findByCategoryAndSubCategories(productCategory);
-
-        List<Product> products= productRepository.findByProductCategoryIn(productCategories);
+        List<Product> products = productRepository.findProductsByCategoryIdWithSubcategories(id);
 
         return products.stream()
                 .map(ProductResponseDto::of)
