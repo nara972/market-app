@@ -3,7 +3,7 @@ package com.group.marketapp;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.group.marketapp.common.jwt.JwtTokenProvider;
-import com.group.marketapp.user.repository.UserRepository;
+import com.group.marketapp.repository.UserRepository;
 import lombok.extern.slf4j.Slf4j;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;

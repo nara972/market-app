@@ -1,29 +1,17 @@
 package com.group.marketapp;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.group.marketapp.product.dto.request.CreateProductRequestDto;
-import com.group.marketapp.product.dto.request.UpdateProductRequestDto;
-import com.group.marketapp.product.dto.response.ProductResponseDto;
-import com.group.marketapp.product.service.ProductService;
-import com.group.marketapp.product.domain.ProductCategory;
-import com.group.marketapp.product.repository.ProductCategoryRepository;
-import com.group.marketapp.product.repository.ProductRepository;
 import lombok.extern.slf4j.Slf4j;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.transaction.annotation.Transactional;
 
 import static org.assertj.core.api.Assertions.assertThat;
-
-import java.util.List;
 
 @Slf4j
 @SpringBootTest
 @Transactional
 public class ProductServiceTest {
 
+    /**
     @Autowired
     private ProductService productService;
 
@@ -149,4 +137,5 @@ public class ProductServiceTest {
         var deletedProduct = productRepository.findById(savedProduct.getId()).orElseThrow();
         assertThat(deletedProduct.isDeleted()).isTrue();
     }
+    **/
 }

@@ -1,12 +1,12 @@
 package com.group.marketapp;
 
-import com.group.marketapp.coupon.domain.Coupon;
-import com.group.marketapp.coupon.domain.CouponType;
-import com.group.marketapp.coupon.repository.CouponRepository;
-import com.group.marketapp.coupon.repository.ReceivedCouponRepository;
-import com.group.marketapp.coupon.service.CouponService;
-import com.group.marketapp.user.domain.Users;
-import com.group.marketapp.user.repository.UserRepository;
+import com.group.marketapp.domain.Coupon;
+import com.group.marketapp.domain.CouponType;
+import com.group.marketapp.repository.CouponRepository;
+import com.group.marketapp.repository.ReceivedCouponRepository;
+import com.group.marketapp.service.CouponService;
+import com.group.marketapp.domain.Users;
+import com.group.marketapp.repository.UserRepository;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
@@ -17,7 +17,6 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
-import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 import java.util.concurrent.CountDownLatch;
