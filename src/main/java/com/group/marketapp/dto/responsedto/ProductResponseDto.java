@@ -1,10 +1,14 @@
 package com.group.marketapp.dto.responsedto;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.group.marketapp.domain.Product;
 import lombok.Builder;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 
 @Getter
+@NoArgsConstructor
+@JsonIgnoreProperties(ignoreUnknown = true)
 public class ProductResponseDto {
 
     private Long id;

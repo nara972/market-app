@@ -8,6 +8,8 @@ import com.group.marketapp.dto.responsedto.ProductResponseDto;
 import com.group.marketapp.repository.ProductCategoryRepository;
 import com.group.marketapp.repository.ProductRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -28,6 +30,7 @@ public class ProductService {
 
     }
 
+    @Cacheable(value = "productCategoryCache", key = "#id")
     public List<ProductResponseDto> getProductCategory(Long id){
 
         List<Product> products = productRepository.findProductsByCategoryIdWithSubcategories(id);
