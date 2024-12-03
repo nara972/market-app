@@ -58,10 +58,8 @@ public class Coupon {
         this.discountPrice=dto.getDiscountPrice();
     }
 
-    public void checkAndDeactivateIfExpired() {
-        if(expiredDate != null && expiredDate.isBefore(LocalDateTime.now())) {
+    public void deactivate() {
             this.isActive=false;
-        }
     }
 
 }

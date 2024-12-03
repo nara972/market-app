@@ -89,11 +89,11 @@ public class CouponService {
     @Scheduled(cron = "0 0 12 * * *")
     @Transactional
     public void deactivateExpiredCoupons(){
-        List<Coupon> coupons = couponRepository.findAll();
-        for(Coupon coupon : coupons){
-            coupon.checkAndDeactivateIfExpired();
+        List<Coupon> expiredCoupons = couponRepository.findExpiredCoupons();
+        for(Coupon coupon : expiredCoupons){
+            coupon.deactivate();
         }
-        couponRepository.saveAll(coupons);
+        couponRepository.saveAll(expiredCoupons);
     }
 
      //선착순 쿠폰 발급 메서드
