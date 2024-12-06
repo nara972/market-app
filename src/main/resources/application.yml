@@ -4,6 +4,10 @@ spring:
     username: "root"
     password: "mysql"
     driver-class-name: com.mysql.cj.jdbc.Driver
+  elasticsearch:
+    uris: http://localhost:9200
+    username: elastic
+    password: 6dNxE8lUwj2C=AukKrm9
   web:
     resources:
       cache:
