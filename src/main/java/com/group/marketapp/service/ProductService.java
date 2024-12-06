@@ -102,7 +102,6 @@ public class ProductService {
                 .categoryName(product.getProductCategory().getName())
                 .categoryId(product.getProductCategory().getId())
                 .price(product.getPrice())
-                .isDeleted(product.isDeleted())
                 .build();
 
         productSearchRepository.save(searchDocument);

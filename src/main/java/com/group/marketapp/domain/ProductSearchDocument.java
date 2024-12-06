@@ -20,15 +20,12 @@ public class ProductSearchDocument {
 
     private int price;
 
-    private boolean isDeleted;
-
     @Builder
-    public ProductSearchDocument(Long id, String name, String categoryName, Long categoryId,int price, boolean isDeleted) {
+    public ProductSearchDocument(Long id, String name, String categoryName, Long categoryId,int price) {
         this.id = id;
         this.name = name;
         this.categoryName = categoryName;
         this.categoryId=categoryId;
         this.price = price;
-        this.isDeleted = isDeleted;
     }
 }
