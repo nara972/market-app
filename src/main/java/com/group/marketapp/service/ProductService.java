@@ -61,7 +61,6 @@ public class ProductService {
     }
 
     public void updateProduct(UpdateProductRequestDto request){
-
         Product product=productRepository.findById(request.getId())
                 .orElseThrow(IllegalArgumentException::new);
 
@@ -69,9 +68,9 @@ public class ProductService {
                         .orElseThrow(IllegalArgumentException::new);
 
         product.update(request,category);
-
         productRepository.save(product);
 
+        syncProductToSearchDocument(product);
     }
 
     public void deleteProduct(Long id){
