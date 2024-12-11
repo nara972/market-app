@@ -57,10 +57,21 @@ public class ProductController {
         }
     }
 
+    /**
     @GetMapping("/product/search")
     public ResponseEntity<List<ProductResponseDto>> searchProducts(@RequestParam String keyword) {
         List<ProductResponseDto> products = productService.searchProducts(keyword);
         return ResponseEntity.ok(products);
+    }**/
+
+    @GetMapping("/product/search")
+    public ResponseEntity<List<ProductResponseDto>> searchProducts(
+            @RequestParam String keyword,
+            @RequestParam(defaultValue = "0") int minPrice,
+            @RequestParam(defaultValue = "1000000") int maxPrice,
+            @RequestParam(defaultValue = "asc") String orderBy) { // 정렬 기준 추가
+        List<ProductResponseDto> results = productService.searchProducts(keyword, minPrice, maxPrice, orderBy);
+        return ResponseEntity.ok(results);
     }
 
 }
