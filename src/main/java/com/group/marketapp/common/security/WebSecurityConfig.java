@@ -35,7 +35,7 @@ public class WebSecurityConfig {
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
 
         http
-                .cors(cors->cors.disable())
+                .cors(cors -> cors.configurationSource(corsConfigurationSource()))
                 .csrf(csrf -> csrf.disable())
                 .httpBasic(httpBasic -> httpBasic.disable())
                 .sessionManagement(sessionManagement ->
@@ -43,7 +43,9 @@ public class WebSecurityConfig {
                 )
                 .authorizeHttpRequests(authorize -> authorize
                                         .requestMatchers("/user/**","/login","/session/**","/logout"
-                                        ,"/order/**").permitAll() // 특정 경로는 인증 없이 접근 가능
+                                        ,"/order/**","/v3/api-docs/**","/api-docs/**",
+                                                "/swagger-ui/**",
+                                                "/swagger-ui.html").permitAll() // 특정 경로는 인증 없이 접근 가능
                         .requestMatchers("/product/**","/coupon/**").hasRole("ADMIN")
                                         .anyRequest().authenticated() // 나머지 모든 요청은 인증 필요
                 )
@@ -74,6 +76,14 @@ public class WebSecurityConfig {
     @Bean
     public PasswordEncoder passwordEncoder() {
         return new BCryptPasswordEncoder();
+    }
+
+    @Bean
+    public WebSecurityCustomizer webSecurityCustomizer() {
+        return (web) -> web.ignoring()
+                .requestMatchers("/v3/api-docs/**", "/api-docs/**","/swagger-ui/**", "/swagger-ui.html")
+                .requestMatchers("/favicon.ico", "/static/css/**", "/resources/**")
+                .requestMatchers(PathRequest.toStaticResources().atCommonLocations());
     }
 
 }

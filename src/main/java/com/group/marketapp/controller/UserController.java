@@ -5,6 +5,8 @@ import com.group.marketapp.dto.requestdto.LoginRequestDto;
 import com.group.marketapp.dto.requestdto.LogoutRequestDto;
 import com.group.marketapp.dto.responsedto.UserResponseDto;
 import com.group.marketapp.service.UserService;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
@@ -15,10 +17,15 @@ import org.springframework.web.bind.annotation.*;
 @Slf4j
 @RestController
 @RequiredArgsConstructor
+@Tag(name = "사용자 관리", description = "사용자 관련 API")
 public class UserController {
 
     private final UserService userService;
 
+    @Operation(
+            summary = "사용자 등록",
+            description = "사용자를 등록합니다."
+    )
     @PostMapping("/user")
     public ResponseEntity<?> createUser(@RequestBody CreateUserRequestDto request) {
 
@@ -32,6 +39,10 @@ public class UserController {
 
     }
 
+    @Operation(
+            summary = "사용자 로그인",
+            description = "사용자 로그인을 합니다."
+    )
     @PostMapping("/login")
     public ResponseEntity<?> login(@RequestBody LoginRequestDto request) {
         try {
@@ -44,6 +55,10 @@ public class UserController {
         }
     }
 
+    @Operation(
+            summary = "사용자 로그아웃",
+            description = "사용자 로그아웃을 합니다."
+    )
     @PostMapping("/logout")
     public ResponseEntity<?> logout(@RequestHeader("Authorization") String authorization, @RequestBody LogoutRequestDto request) {
 
@@ -60,6 +75,10 @@ public class UserController {
 
     }
 
+    @Operation(
+            summary = "사용자 토큰 재발급",
+            description = "사용자 토큰을 재발급 합니다."
+    )
     @PostMapping("/auth/refresh-token")
     public ResponseEntity<?> refreshAccessToken(@RequestHeader("Authorization") String refreshToken) {
         try {

@@ -5,22 +5,28 @@ import com.group.marketapp.dto.requestdto.CreateCouponRequestDto;
 import com.group.marketapp.dto.requestdto.UpdateCouponRequestDto;
 import com.group.marketapp.dto.responsedto.CouponResponseDto;
 import com.group.marketapp.service.CouponService;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-
+import io.swagger.v3.oas.annotations.Operation;
 import java.util.List;
 
 @RestController
 @RequiredArgsConstructor
+@Tag(name = "쿠폰 관리", description = "쿠폰 관련 API")
 public class CouponController {
 
     private final CouponService couponService;
     private final RedisTemplate<String, Object> redisTemplate;
     private final JwtTokenProvider jwtTokenProvider;
 
+    @Operation(
+            summary = "쿠폰 생성",
+            description = "새로운 쿠폰을 생성합니다."
+    )
     @PostMapping("/coupon")
     public ResponseEntity<?> createCoupon(@RequestBody CreateCouponRequestDto requestDto) {
         try {
@@ -31,11 +37,19 @@ public class CouponController {
         }
     }
 
+    @Operation(
+            summary = "쿠폰 조회",
+            description = "쿠폰 정보를 조회합니다."
+    )
     @GetMapping("/coupon")
     public List<CouponResponseDto> getCoupons(){
         return couponService.getCoupon();
     }
 
+    @Operation(
+            summary = "쿠폰 업데이트",
+            description = "쿠폰 정보를 조회합니다."
+    )
     @PutMapping("/coupon")
     public ResponseEntity<?> updateCoupon(@RequestBody UpdateCouponRequestDto requestDto) {
         try {
@@ -48,7 +62,10 @@ public class CouponController {
         }
     }
 
-    //선착순 쿠폰 발급 API
+    @Operation(
+            summary = "선착순 쿠폰 발급",
+            description = "선착순으로 쿠폰을 발급합니다."
+    )
     @PostMapping("/coupon/{couponId}/issue")
     public CouponResponseDto issueCoupon(@PathVariable Long couponId,@RequestHeader("Authorization") String authorization){
 

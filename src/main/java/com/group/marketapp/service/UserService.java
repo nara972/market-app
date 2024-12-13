@@ -6,6 +6,8 @@ import com.group.marketapp.dto.requestdto.CreateUserRequestDto;
 import com.group.marketapp.dto.requestdto.LoginRequestDto;
 import com.group.marketapp.dto.responsedto.UserResponseDto;
 import com.group.marketapp.repository.UserRepository;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.annotation.PostConstruct;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;

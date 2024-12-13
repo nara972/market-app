@@ -1,0 +1,570 @@
+---
+openapi: 3.0.1
+info:
+  title: Market App API
+  description: API 명세서
+  version: '1.0'
+servers:
+  - url: http://localhost:8080
+    description: Generated server url
+security:
+  - Bearer Authentication: []
+tags:
+  - name: 쿠폰 관리
+    description: 쿠폰 관련 API
+  - name: 상품 관리
+    description: 상품 관련 API
+  - name: 주문 관리
+    description: 주문 관련 API
+  - name: 사용자 관리
+    description: 사용자 관련 API
+paths:
+  "/product":
+    put:
+      tags:
+        - 상품 관리
+      summary: 상품 수정
+      description: 상품을 수정합니다.
+      operationId: updateProduct
+      requestBody:
+        content:
+          application/json:
+            schema:
+              "$ref": "#/components/schemas/UpdateProductRequestDto"
+        required: true
+      responses:
+        '200':
+          description: OK
+          content:
+            "*/*":
+              schema:
+                type: object
+    post:
+      tags:
+        - 상품 관리
+      summary: 상품 생성
+      description: 새로운 상품을 생성합니다.
+      operationId: createProduct
+      requestBody:
+        content:
+          application/json:
+            schema:
+              "$ref": "#/components/schemas/CreateProductRequestDto"
+        required: true
+      responses:
+        '200':
+          description: OK
+          content:
+            "*/*":
+              schema:
+                type: object
+  "/coupon":
+    get:
+      tags:
+        - 쿠폰 관리
+      summary: 쿠폰 조회
+      description: 쿠폰 정보를 조회합니다.
+      operationId: getCoupons
+      responses:
+        '200':
+          description: OK
+          content:
+            "*/*":
+              schema:
+                type: array
+                items:
+                  "$ref": "#/components/schemas/CouponResponseDto"
+    put:
+      tags:
+        - 쿠폰 관리
+      summary: 쿠폰 업데이트
+      description: 쿠폰 정보를 조회합니다.
+      operationId: updateCoupon
+      requestBody:
+        content:
+          application/json:
+            schema:
+              "$ref": "#/components/schemas/UpdateCouponRequestDto"
+        required: true
+      responses:
+        '200':
+          description: OK
+          content:
+            "*/*":
+              schema:
+                type: object
+    post:
+      tags:
+        - 쿠폰 관리
+      summary: 쿠폰 생성
+      description: 새로운 쿠폰을 생성합니다.
+      operationId: createCoupon
+      requestBody:
+        content:
+          application/json:
+            schema:
+              "$ref": "#/components/schemas/CreateCouponRequestDto"
+        required: true
+      responses:
+        '200':
+          description: OK
+          content:
+            "*/*":
+              schema:
+                type: object
+  "/user":
+    post:
+      tags:
+        - 사용자 관리
+      summary: 사용자 등록
+      description: 사용자를 등록합니다.
+      operationId: createUser
+      requestBody:
+        content:
+          application/json:
+            schema:
+              "$ref": "#/components/schemas/CreateUserRequestDto"
+        required: true
+      responses:
+        '200':
+          description: OK
+          content:
+            "*/*":
+              schema:
+                type: object
+  "/order":
+    post:
+      tags:
+        - 주문 관리
+      summary: 주문 생성
+      description: 새로운 주문을 생성합니다.
+      operationId: createOrder
+      parameters:
+        - name: Authorization
+          in: header
+          required: true
+          schema:
+            type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              "$ref": "#/components/schemas/CreateOrderRequestDto"
+        required: true
+      responses:
+        '200':
+          description: OK
+          content:
+            "*/*":
+              schema:
+                type: object
+  "/order/{orderId}/cancel":
+    post:
+      tags:
+        - 주문 관리
+      summary: 주문 취소
+      description: 해당 주문을 취소합니다.
+      operationId: cancelOrder
+      parameters:
+        - name: orderId
+          in: path
+          required: true
+          schema:
+            type: integer
+            format: int64
+      responses:
+        '200':
+          description: OK
+          content:
+            "*/*":
+              schema:
+                type: object
+  "/logout":
+    post:
+      tags:
+        - 사용자 관리
+      summary: 사용자 로그아웃
+      description: 사용자 로그아웃을 합니다.
+      operationId: logout
+      parameters:
+        - name: Authorization
+          in: header
+          required: true
+          schema:
+            type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              "$ref": "#/components/schemas/LogoutRequestDto"
+        required: true
+      responses:
+        '200':
+          description: OK
+          content:
+            "*/*":
+              schema:
+                type: object
+  "/login":
+    post:
+      tags:
+        - 사용자 관리
+      summary: 사용자 로그인
+      description: 사용자 로그인을 합니다.
+      operationId: login
+      requestBody:
+        content:
+          application/json:
+            schema:
+              "$ref": "#/components/schemas/LoginRequestDto"
+        required: true
+      responses:
+        '200':
+          description: OK
+          content:
+            "*/*":
+              schema:
+                type: object
+  "/coupon/{couponId}/issue":
+    post:
+      tags:
+        - 쿠폰 관리
+      summary: 선착순 쿠폰 발급
+      description: 선착순으로 쿠폰을 발급합니다.
+      operationId: issueCoupon
+      parameters:
+        - name: couponId
+          in: path
+          required: true
+          schema:
+            type: integer
+            format: int64
+        - name: Authorization
+          in: header
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: OK
+          content:
+            "*/*":
+              schema:
+                "$ref": "#/components/schemas/CouponResponseDto"
+  "/auth/refresh-token":
+    post:
+      tags:
+        - 사용자 관리
+      summary: 사용자 토큰 재발급
+      description: 사용자 토큰을 재발급 합니다.
+      operationId: refreshAccessToken
+      parameters:
+        - name: Authorization
+          in: header
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: OK
+          content:
+            "*/*":
+              schema:
+                type: object
+  "/product/{id}":
+    get:
+      tags:
+        - 상품 관리
+      summary: 상품 조회
+      description: 하나의 상품을 조회합니다.
+      operationId: getProduct
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+            format: int64
+      responses:
+        '200':
+          description: OK
+          content:
+            "*/*":
+              schema:
+                "$ref": "#/components/schemas/ProductResponseDto"
+    delete:
+      tags:
+        - 상품 관리
+      summary: 상품 삭제
+      description: 상품을 삭제합니다.
+      operationId: deleteProduct
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+            format: int64
+      responses:
+        '200':
+          description: OK
+          content:
+            "*/*":
+              schema:
+                type: object
+  "/product/search":
+    get:
+      tags:
+        - 상품 관리
+      summary: 상품 검색
+      description: 상품명 또는 상품 카테고리명으로 상품을 검색합니다.
+      operationId: searchProducts
+      parameters:
+        - name: keyword
+          in: query
+          required: true
+          schema:
+            type: string
+        - name: minPrice
+          in: query
+          required: false
+          schema:
+            type: integer
+            format: int32
+            default: 0
+        - name: maxPrice
+          in: query
+          required: false
+          schema:
+            type: integer
+            format: int32
+            default: 1000000
+        - name: orderBy
+          in: query
+          required: false
+          schema:
+            type: string
+            default: asc
+      responses:
+        '200':
+          description: OK
+          content:
+            "*/*":
+              schema:
+                type: array
+                items:
+                  "$ref": "#/components/schemas/ProductResponseDto"
+  "/product/category/{id}":
+    get:
+      tags:
+        - 상품 관리
+      summary: 카테고리별 상품 조회
+      description: 카테고리별 상품을 조회합니다.
+      operationId: getProductCategory
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+            format: int64
+      responses:
+        '200':
+          description: OK
+          content:
+            "*/*":
+              schema:
+                type: array
+                items:
+                  "$ref": "#/components/schemas/ProductResponseDto"
+components:
+  schemas:
+    UpdateProductRequestDto:
+      type: object
+      properties:
+        id:
+          type: integer
+          format: int64
+        name:
+          type: string
+        price:
+          type: integer
+          format: int32
+        stock:
+          type: integer
+          format: int32
+        product_category_id:
+          type: integer
+          format: int64
+    UpdateCouponRequestDto:
+      type: object
+      properties:
+        id:
+          type: integer
+          format: int64
+        name:
+          type: string
+        quantity:
+          type: integer
+          format: int32
+        expiredDate:
+          type: string
+          format: date-time
+        minimumMoney:
+          type: integer
+          format: int32
+        discountPrice:
+          type: integer
+          format: int32
+        active:
+          type: boolean
+    CreateUserRequestDto:
+      required:
+        - address
+        - loginId
+        - password
+        - username
+      type: object
+      properties:
+        loginId:
+          type: string
+        password:
+          type: string
+        username:
+          type: string
+        address:
+          type: string
+    CreateProductRequestDto:
+      type: object
+      properties:
+        name:
+          type: string
+        price:
+          type: integer
+          format: int32
+        stock:
+          type: integer
+          format: int32
+        deleted:
+          type: boolean
+        product_category_id:
+          type: integer
+          format: int64
+    CreateOrderRequestDto:
+      type: object
+      properties:
+        receiverName:
+          type: string
+        receiverAddress:
+          type: string
+        orderProducts:
+          type: array
+          items:
+            "$ref": "#/components/schemas/OrderProductRequestDto"
+    OrderProductRequestDto:
+      type: object
+      properties:
+        productId:
+          type: integer
+          format: int64
+        count:
+          type: integer
+          format: int32
+    LogoutRequestDto:
+      required:
+        - accessToken
+        - refreshToken
+      type: object
+      properties:
+        accessToken:
+          type: string
+        refreshToken:
+          type: string
+    LoginRequestDto:
+      required:
+        - loginId
+        - password
+      type: object
+      properties:
+        loginId:
+          type: string
+        password:
+          type: string
+    CreateCouponRequestDto:
+      type: object
+      properties:
+        name:
+          type: string
+        couponType:
+          type: string
+          enum:
+            - FIRST_COME_FIRST_SERVE
+            - AUTO_ISSUE
+        quantity:
+          type: integer
+          format: int32
+        expiredDate:
+          type: string
+          format: date-time
+        minimumMoney:
+          type: integer
+          format: int32
+        discountPrice:
+          type: integer
+          format: int32
+    CouponResponseDto:
+      type: object
+      properties:
+        id:
+          type: integer
+          format: int64
+        name:
+          type: string
+        couponType:
+          type: string
+          enum:
+            - FIRST_COME_FIRST_SERVE
+            - AUTO_ISSUE
+        expiredDate:
+          type: string
+          format: date-time
+        minimumMoney:
+          type: integer
+          format: int32
+        discountPrice:
+          type: integer
+          format: int32
+        active:
+          type: boolean
+    ProductResponseDto:
+      type: object
+      properties:
+        id:
+          type: integer
+          format: int64
+        name:
+          type: string
+        price:
+          type: integer
+          format: int32
+        stock:
+          type: integer
+          format: int32
+        categoryId:
+          type: integer
+          format: int64
+        categoryName:
+          type: string
+        deleted:
+          type: boolean
+  securitySchemes:
+    Access Token:
+      type: http
+      description: Access Token 사용
+      scheme: bearer
+      bearerFormat: JWT
+    Refresh Token:
+      type: http
+      description: Refresh Token 사용
+      scheme: bearer
+      bearerFormat: JWT

@@ -4,6 +4,8 @@ package com.group.marketapp.controller;
 import com.group.marketapp.common.jwt.JwtTokenProvider;
 import com.group.marketapp.dto.requestdto.CreateOrderRequestDto;
 import com.group.marketapp.service.OrderService;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.redis.core.RedisTemplate;
@@ -14,12 +16,17 @@ import org.springframework.web.bind.annotation.*;
 @Slf4j
 @RequiredArgsConstructor
 @RestController
+@Tag(name = "주문 관리", description = "주문 관련 API")
 public class OrderController {
 
     private final OrderService orderService;
     private final RedisTemplate<String, Object> redisTemplate;
     private final JwtTokenProvider jwtTokenProvider;
 
+    @Operation(
+            summary = "주문 생성",
+            description = "새로운 주문을 생성합니다."
+    )
     @PostMapping("/order")
     public ResponseEntity<?> createOrder(@RequestHeader("Authorization") String authorization,@RequestBody CreateOrderRequestDto request) {
         try {
@@ -44,7 +51,10 @@ public class OrderController {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Failed to create order: " + e.getMessage());
         }
     }
-
+    @Operation(
+            summary = "주문 취소",
+            description = "해당 주문을 취소합니다."
+    )
     @PostMapping("/order/{orderId}/cancel")
     public ResponseEntity<?> cancelOrder(@PathVariable Long orderId) {
         try {
