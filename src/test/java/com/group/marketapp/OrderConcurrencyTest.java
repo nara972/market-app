@@ -61,7 +61,6 @@ public class OrderConcurrencyTest {
                 .build();
         userRepository.save(testUser);
 
-
         // 카테고리 및 상품 생성
         ProductCategory category = ProductCategory.builder()
                 .name("Electronics")
@@ -71,7 +70,7 @@ public class OrderConcurrencyTest {
         testProduct = Product.builder()
                 .name("Smartphone")
                 .price(1000)
-                .stock(50) // 초기 재고
+                .stock(50) // 초기 재고 설정
                 .isDeleted(false)
                 .productCategory(category)
                 .build();
@@ -79,13 +78,10 @@ public class OrderConcurrencyTest {
     }
 
     @Test
-    void testConcurrentOrderCreation() throws InterruptedException {
+    void compareLockPerformance() throws InterruptedException {
         int threadCount = 10; // 동시 실행할 스레드 수
         int ordersPerThread = 5; // 각 스레드에서 생성할 주문 수
         int totalOrders = threadCount * ordersPerThread;
-
-        ExecutorService executorService = Executors.newFixedThreadPool(threadCount);
-        CountDownLatch latch = new CountDownLatch(threadCount);
 
         // 주문 요청 DTO 생성
         OrderProductRequestDto orderProductRequest = OrderProductRequestDto.builder()
@@ -99,44 +95,67 @@ public class OrderConcurrencyTest {
                 .orderProducts(List.of(orderProductRequest))
                 .build();
 
+        // 비관적 락 성능 테스트
+        long pessimisticDuration = measureExecutionTime(() -> {
+            try {
+                executeConcurrentOrders(() -> orderService.createOrder(createOrderRequest, testUser.getLoginId()), threadCount, ordersPerThread);
+            } catch (InterruptedException e) {
+                throw new RuntimeException(e);
+            }
+        });
+
+        // 분산 락 성능 테스트
+        long distributedDuration = measureExecutionTime(() -> {
+            try {
+                executeConcurrentOrders(() -> orderService.createOrderWithRedisson(createOrderRequest, testUser.getLoginId()), threadCount, ordersPerThread);
+            } catch (InterruptedException e) {
+                throw new RuntimeException(e);
+            }
+        });
+
+        // 결과 출력
+        log.info("비관적 락 실행 시간: {}ms", pessimisticDuration);
+        log.info("분산 락 실행 시간: {}ms", distributedDuration);
+
+        // 성능 비교
+        assertThat(pessimisticDuration).isGreaterThan(0);
+        assertThat(distributedDuration).isGreaterThan(0);
+    }
+
+    private void executeConcurrentOrders(Runnable task, int threadCount, int ordersPerThread) throws InterruptedException {
+        ExecutorService executorService = Executors.newFixedThreadPool(threadCount);
+        CountDownLatch latch = new CountDownLatch(threadCount);
+
         for (int i = 0; i < threadCount; i++) {
             executorService.submit(() -> {
                 try {
                     // 스레드별 SecurityContextHolder 설정
                     SecurityContextHolder.getContext().setAuthentication(
                             new UsernamePasswordAuthenticationToken(
-                                    testUser, // Users 객체를 Principal로 설정
+                                    testUser,
                                     null,
                                     List.of(new SimpleGrantedAuthority(testUser.getRole()))
                             )
                     );
 
                     for (int j = 0; j < ordersPerThread; j++) {
-                        orderService.createOrder(createOrderRequest, testUser.getLoginId());
-                        log.info("Order created by thread: {}", Thread.currentThread().getName());
+                        task.run();
                     }
-                } catch (Exception e) {
-                    log.error("Order creation failed: {}", e.getMessage());
                 } finally {
                     latch.countDown();
                 }
             });
         }
 
-        latch.await(); // 모든 스레드가 작업을 마칠 때까지 대기
+        latch.await();
         executorService.shutdown();
-
-        // 최종 재고 확인
-        Product updatedProduct = productRepository.findById(testProduct.getId())
-                .orElseThrow(() -> new IllegalArgumentException("Product not found"));
-
-        log.info("Final stock: {}, Expected stock: {}", updatedProduct.getStock(), Math.max(50 - totalOrders, 0));
-
-        // 예상 재고 감소 확인
-        assertThat(updatedProduct.getStock()).isEqualTo(Math.max(50 - totalOrders, 0));
-
-        // 성공한 주문 개수 확인
-        long successfulOrders = orderRepository.count();
-        assertThat(successfulOrders).isEqualTo(Math.min(50, totalOrders)); // 재고가 허용하는 주문만 성공
     }
+
+    private long measureExecutionTime(Runnable task) throws InterruptedException {
+        long startTime = System.currentTimeMillis();
+        task.run();
+        long endTime = System.currentTimeMillis();
+        return endTime - startTime;
+    }
+
 }

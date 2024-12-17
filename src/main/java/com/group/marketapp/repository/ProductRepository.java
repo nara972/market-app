@@ -1,7 +1,6 @@
 package com.group.marketapp.repository;
 
 import com.group.marketapp.domain.Product;
-import com.group.marketapp.domain.ProductCategory;
 import jakarta.persistence.LockModeType;
 import jakarta.transaction.Transactional;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -14,7 +13,6 @@ import java.util.List;
 import java.util.Optional;
 
 public interface ProductRepository extends JpaRepository<Product, Long> {
-
 
     @Modifying
     @Transactional

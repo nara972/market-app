@@ -12,10 +12,16 @@ import com.group.marketapp.domain.Users;
 import com.group.marketapp.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.redisson.api.RLock;
+import org.redisson.api.RedissonClient;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
+import java.util.concurrent.TimeUnit;
+import java.util.stream.Collectors;
 
 @Slf4j
 @RequiredArgsConstructor
@@ -26,39 +32,55 @@ public class OrderService {
     private final OrderProductRepository orderProductRepository;
     private final ProductRepository productRepository;
     private final UserRepository userRepository;
-
+    private final RedissonClient redissonClient;
 
     @Transactional
-    public Long createOrder(CreateOrderRequestDto request,String loginId){
-
+    public Long createOrderWithRedisson(CreateOrderRequestDto request, String loginId) {
         Users user = userRepository.findByLoginId(loginId)
-                .orElseThrow(()->new IllegalArgumentException("User not found"));
+                .orElseThrow(() -> new IllegalArgumentException("User not found"));
 
-        Order order = request.toOrder(user);
-        order = orderRepository.save(order);
+        Order order = orderRepository.save(request.toOrder(user));
 
-        List<OrderProduct> orderProducts = request.toOrderProducts();
+        Map<Long, Integer> productIdToCount = request.getOrderProducts().stream()
+                .collect(Collectors.toMap(OrderProductRequestDto::getProductId, OrderProductRequestDto::getCount));
 
-        for(OrderProductRequestDto dto : request.getOrderProducts()){
+        List<RLock> locks = new ArrayList<>();
 
-            Product product = productRepository.findByIdWithLock(dto.getProductId())
-                    .orElseThrow(() -> new IllegalArgumentException("Product not found"));
-            if(product.getStock() < dto.getCount()){
-                throw new IllegalArgumentException("Insufficient stock");
+        try {
+            for (Long productId : productIdToCount.keySet()) {
+                String lockKey = "lock:product:" + productId;
+                RLock lock = redissonClient.getLock(lockKey);
+                if (lock.tryLock(5, 10, TimeUnit.SECONDS)) {
+                    locks.add(lock);
+                } else {
+                    throw new IllegalStateException("Failed to acquire lock for product: " + productId);
+                }
             }
 
-            product.setStock(product.getStock() - dto.getCount());
-            productRepository.save(product);
+            List<Product> products = productRepository.findAllById(new ArrayList<>(productIdToCount.keySet()));
+            for (Product product : products) {
+                int requestedCount = productIdToCount.getOrDefault(product.getId(), 0);
+                if (product.getStock() < requestedCount) {
+                    throw new IllegalArgumentException("Insufficient stock for product: " + product.getId());
+                }
+                product.setStock(product.getStock() - requestedCount);
+            }
+
+            productRepository.saveAll(products);
+
+        } catch (InterruptedException e) {
+            throw new IllegalStateException("Thread interrupted while acquiring lock", e);
+        } finally {
+            for (RLock lock : locks) {
+                if (lock.isHeldByCurrentThread()) {
+                    lock.unlock();
+                }
+            }
         }
 
-        for(OrderProduct orderProduct: orderProducts){
-            orderProduct.setOrder(order);
-
-        }
-        orderProductRepository.saveAll(orderProducts);
         return order.getId();
-
     }
+
 
     public void cancelOrder(Long orderId) {
         Order order = orderRepository.findById(orderId)
@@ -68,5 +90,38 @@ public class OrderService {
 
         orderRepository.save(order);
     }
+
+     /**
+      * 비관적 락을 이용한 동시성 이슈 해결
+     @Transactional
+     public Long createOrder(CreateOrderRequestDto request,String loginId){
+
+     Users user = userRepository.findByLoginId(loginId)
+     .orElseThrow(()->new IllegalArgumentException("User not found"));
+
+     Order order = orderRepository.save(request.toOrder(user));
+
+     List<OrderProduct> orderProducts = request.toOrderProducts();
+
+     for(OrderProductRequestDto dto : request.getOrderProducts()){
+
+     Product product = productRepository.findByIdWithLock(dto.getProductId())
+     .orElseThrow(() -> new IllegalArgumentException("Product not found"));
+     if(product.getStock() < dto.getCount()){
+     throw new IllegalArgumentException("Insufficient stock");
+     }
+
+     product.setStock(product.getStock() - dto.getCount());
+     productRepository.save(product);
+     }
+
+     for(OrderProduct orderProduct: orderProducts){
+     orderProduct.setOrder(order);
+     }
+
+     orderProductRepository.saveAll(orderProducts);
+     return order.getId();
+     }
+     */
 
 }
