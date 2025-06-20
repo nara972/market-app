@@ -32,11 +32,9 @@ dependencies {
 	implementation 'io.jsonwebtoken:jjwt-jackson:0.11.5' // Jackson 사용 시
 	implementation 'org.springframework.boot:spring-boot-starter-thymeleaf'
 	developmentOnly "org.springframework.boot:spring-boot-devtools"
-	implementation group: 'org.springdoc', name: 'springdoc-openapi-starter-webmvc-ui', version: '2.1.0'
 	implementation 'org.springframework.boot:spring-boot-starter-data-elasticsearch'
 	implementation 'co.elastic.clients:elasticsearch-java:8.8.0'
-	implementation 'org.springdoc:springdoc-openapi-starter-webmvc-ui:2.1.0'
-	implementation 'org.springdoc:springdoc-openapi-common:2.1.0'
+	implementation 'org.springdoc:springdoc-openapi-starter-webmvc-ui:2.2.0'
 	testImplementation 'org.springframework.boot:spring-boot-starter-test'
 	testImplementation 'org.springframework.security:spring-security-test'
 }
