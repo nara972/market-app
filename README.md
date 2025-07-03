@@ -37,10 +37,11 @@
 
 ## **기술 스택**
 
-### **Back-end**
+
 
 - Java, SpringBoot, Spring Security
 - JPA, MySQL
+- JavaScript
 - Redis, Elasticsearch
 - Docker
 - Swagger
@@ -94,6 +95,8 @@
 4. **Elasticsearch 검색**
 - 상품명 및 카테고리 검색: Elasticsearch를 활용하여 효율적이고 빠른 검색 기능 구현
 - 가격 필터링 및 정렬: Elasticsearch를 통해 가격 필터링 및 정렬 기능 추가
+5. **Docker 기반 환경 구성**
+- Docker-Compose로 MySQL, Redis, Elasticsearch, Spring Boot 컨테이너화하여 실행 환경 구성
     
 <br>
 
