@@ -6,6 +6,7 @@ services:
     container_name: spring-app
     ports:
       - "8080:8080"
+      - "5005:5005"
     depends_on:
       db:
         condition: service_healthy
@@ -13,7 +14,13 @@ services:
         condition: service_started
       elasticsearch:
         condition: service_started
+    volumes:
+      - ./src:/app/src
+      - ./build/classes/java/main:/app/build/classes/java/main
+      - ./build/resources/main:/app/build/resources/main
+      - ./src/main/resources/templates:/app/build/resources/main/templates
     environment:
+      JAVA_OPTS: "-agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=*:5005"
       SPRING_DATASOURCE_URL: jdbc:mysql://db:3306/market
       SPRING_DATASOURCE_USERNAME: root
       SPRING_DATASOURCE_PASSWORD: 1234
@@ -33,10 +40,12 @@ services:
     ports:
       - "3306:3306"
     healthcheck:
-      test: [ "CMD", "mysqladmin", "ping", "-h", "localhost" ]
+      test: [ "CMD", "mysqladmin", "ping", "-h", "localhost", "-u", "root", "-p1234"]
       interval: 10s
       timeout: 5s
-      retries: 5
+      retries: 10
+    volumes:
+      - mysql-data:/var/lib/mysql
     networks:
       - app-network
 
@@ -54,6 +63,8 @@ services:
     environment:
       - discovery.type=single-node
       - xpack.security.enabled=false
+      - http.cors.enabled=true        # CORS 활성화
+      - http.cors.allow-origin="*"   # 모든 도메인에서의 접근 허용
     ports:
       - "9200:9200"
       - "9300:9300"
@@ -63,3 +74,6 @@ services:
 networks:
   app-network:
     driver: bridge
+
+volumes:
+  mysql-data:

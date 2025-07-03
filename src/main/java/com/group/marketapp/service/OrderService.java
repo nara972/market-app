@@ -35,11 +35,11 @@ public class OrderService {
     private final RedissonClient redissonClient;
 
     @Transactional
-    public Long createOrderWithRedisson(CreateOrderRequestDto request, String loginId) {
+    public Long createOrder(CreateOrderRequestDto request, String loginId) {
         Users user = userRepository.findByLoginId(loginId)
                 .orElseThrow(() -> new IllegalArgumentException("User not found"));
 
-        Order order = orderRepository.save(request.toOrder(user));
+        Order order = request.toOrderWithProducts(user);
 
         Map<Long, Integer> productIdToCount = request.getOrderProducts().stream()
                 .collect(Collectors.toMap(OrderProductRequestDto::getProductId, OrderProductRequestDto::getCount));
@@ -48,28 +48,29 @@ public class OrderService {
 
         try {
             for (Long productId : productIdToCount.keySet()) {
-                String lockKey = "lock:product:" + productId;
-                RLock lock = redissonClient.getLock(lockKey);
+                RLock lock = redissonClient.getLock("lock:product:" + productId);
                 if (lock.tryLock(5, 10, TimeUnit.SECONDS)) {
                     locks.add(lock);
                 } else {
-                    throw new IllegalStateException("Failed to acquire lock for product: " + productId);
+                    throw new IllegalStateException("Lock failed: " + productId);
                 }
             }
 
-            List<Product> products = productRepository.findAllById(new ArrayList<>(productIdToCount.keySet()));
+            List<Product> products = productRepository.findAllById(productIdToCount.keySet());
+
             for (Product product : products) {
-                int requestedCount = productIdToCount.getOrDefault(product.getId(), 0);
-                if (product.getStock() < requestedCount) {
+                int count = productIdToCount.get(product.getId());
+                if (product.getStock() < count) {
                     throw new IllegalArgumentException("Insufficient stock for product: " + product.getId());
                 }
-                product.setStock(product.getStock() - requestedCount);
+                product.setStock(product.getStock() - count);
             }
 
             productRepository.saveAll(products);
+            orderRepository.save(order);
 
         } catch (InterruptedException e) {
-            throw new IllegalStateException("Thread interrupted while acquiring lock", e);
+            throw new IllegalStateException("Lock interrupted", e);
         } finally {
             for (RLock lock : locks) {
                 if (lock.isHeldByCurrentThread()) {

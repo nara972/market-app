@@ -4,6 +4,7 @@ import com.group.marketapp.common.jwt.JwtTokenProvider;
 import com.group.marketapp.dto.requestdto.CreateCouponRequestDto;
 import com.group.marketapp.dto.requestdto.UpdateCouponRequestDto;
 import com.group.marketapp.dto.responsedto.CouponResponseDto;
+import com.group.marketapp.dto.responsedto.ProductResponseDto;
 import com.group.marketapp.service.CouponService;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
@@ -27,7 +28,7 @@ public class CouponController {
             summary = "쿠폰 생성",
             description = "새로운 쿠폰을 생성합니다."
     )
-    @PostMapping("/coupon")
+    @PostMapping("/admin/coupon/create")
     public ResponseEntity<?> createCoupon(@RequestBody CreateCouponRequestDto requestDto) {
         try {
             couponService.createCoupon(requestDto);
@@ -38,22 +39,46 @@ public class CouponController {
     }
 
     @Operation(
-            summary = "쿠폰 조회",
+            summary = "쿠폰 상세 조회",
             description = "쿠폰 정보를 조회합니다."
     )
-    @GetMapping("/coupon")
-    public List<CouponResponseDto> getCoupons(){
-        return couponService.getCoupon();
+    @GetMapping("/coupon/detail/{id}")
+    public CouponResponseDto getCoupon(@PathVariable Long id){
+        return couponService.getCoupon(id);
+    }
+
+    @Operation(
+            summary = "쿠폰 목록 조회",
+            description = "쿠폰 정보를 조회합니다."
+    )
+    @GetMapping("/coupon/all")
+    public ResponseEntity<List<CouponResponseDto>> getCoupons(
+            @RequestHeader(value = "Authorization", required = false) String authorization) {
+        try {
+            if (authorization != null && authorization.startsWith("Bearer ")) {
+                String token = authorization.substring(7);
+                String loginId = jwtTokenProvider.extractLoginId(token);
+
+                String sessionToken = (String) redisTemplate.opsForValue().get("RT:" + loginId);
+                if (sessionToken != null && loginId.equals(jwtTokenProvider.extractLoginId(sessionToken))) {
+                    return ResponseEntity.ok(couponService.getAllCoupons(loginId));
+                }
+            }
+        } catch (Exception e) {
+            // e.printStackTrace(); 
+        }
+
+        return ResponseEntity.ok(couponService.getActiveCoupons());
     }
 
     @Operation(
             summary = "쿠폰 업데이트",
-            description = "쿠폰 정보를 조회합니다."
+            description = "쿠폰 정보를 수정합니다."
     )
-    @PutMapping("/coupon")
-    public ResponseEntity<?> updateCoupon(@RequestBody UpdateCouponRequestDto requestDto) {
+    @PutMapping("/admin/coupon/update/{id}")
+    public ResponseEntity<?> updateCoupon(@PathVariable Long id, @RequestBody UpdateCouponRequestDto requestDto) {
         try {
-            couponService.updateCoupon(requestDto);
+            couponService.updateCoupon(id, requestDto);
             return ResponseEntity.ok("Coupon updated successfully");
         } catch (IllegalArgumentException e) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Invalid request: " + e.getMessage());

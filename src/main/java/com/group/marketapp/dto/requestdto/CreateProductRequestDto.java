@@ -8,6 +8,8 @@ public class CreateProductRequestDto {
 
     private String name;
 
+    private String content;
+
     private int price;
 
     private int stock;

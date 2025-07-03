@@ -4,6 +4,7 @@ import jakarta.persistence.*;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import lombok.Setter;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
@@ -12,6 +13,7 @@ import java.util.List;
 @Entity
 @Table(name = "`order`")
 @Getter
+@Setter
 @NoArgsConstructor
 public class Order {
 
@@ -32,7 +34,7 @@ public class Order {
     private OrderStatus orderStatus;
 
 
-    @OneToMany(mappedBy = "order")
+    @OneToMany(mappedBy = "order", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<OrderProduct> orderProducts = new ArrayList<>();
 
     private LocalDateTime deliveredAt;
@@ -45,6 +47,13 @@ public class Order {
         this.user = user;
         this.orderStatus = orderStatus;
         this.deliveredAt = deliveredAt;
+    }
+
+    public void setOrderProducts(List<OrderProduct> orderProducts) {
+        this.orderProducts = orderProducts;
+        for (OrderProduct orderProduct : orderProducts) {
+            orderProduct.setOrder(this);
+        }
     }
 
     public void cancelOrder(){

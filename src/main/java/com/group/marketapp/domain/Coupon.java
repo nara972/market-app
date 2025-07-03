@@ -40,7 +40,7 @@ public class Coupon {
     }
 
     @Builder
-    public Coupon(String name, CouponType couponType, int quantity, LocalDateTime expiredDate, boolean isActive, Integer minimumMoney, int discountPrice) {
+    public Coupon(String name, CouponType couponType, int quantity, LocalDateTime expiredDate, Integer minimumMoney, int discountPrice) {
         this.name = name;
         this.couponType = couponType;
         this.quantity = quantity;

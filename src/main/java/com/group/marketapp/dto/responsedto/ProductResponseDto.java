@@ -13,6 +13,7 @@ public class ProductResponseDto {
 
     private Long id;
     private String name;
+    private String content;
     private int price;
     private int stock;
     private boolean isDeleted;
@@ -20,9 +21,10 @@ public class ProductResponseDto {
     private String categoryName;
 
     @Builder
-    public ProductResponseDto(Long id, String name, int price, int stock, boolean isDeleted, Long categoryId, String categoryName) {
+    public ProductResponseDto(Long id, String name, String content, int price, int stock, boolean isDeleted, Long categoryId, String categoryName) {
         this.id = id;
         this.name = name;
+        this.content = content;
         this.price = price;
         this.stock = stock;
         this.isDeleted = isDeleted;
@@ -34,6 +36,7 @@ public class ProductResponseDto {
         return new ProductResponseDto(
                 product.getId(),
                 product.getName(),
+                product.getContent(),
                 product.getPrice(),
                 product.getStock(),
                 product.isDeleted(),

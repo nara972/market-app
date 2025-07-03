@@ -15,6 +15,9 @@ public class Product {
     @Column(length = 256, nullable = false)
     private String name;
 
+    @Column(length = 1000)
+    private String content;
+
     @Column(nullable = false)
     private int price;
 
@@ -28,33 +31,32 @@ public class Product {
     @JoinColumn(name = "product_category_id", nullable = false)
     private ProductCategory productCategory;
 
-    public Product(){
+    public Product() {}
 
-    }
-
-    public int getStock(){
+    public int getStock() {
         return stock;
     }
 
-    public void setStock(int stock){
+    public void setStock(int stock) {
         this.stock = stock;
     }
 
     @Builder
-    public Product(Long id, String name, int price, int stock, boolean isDeleted,ProductCategory productCategory) {
+    public Product(Long id, String name, String content, int price, int stock, boolean isDeleted, ProductCategory productCategory) {
         this.id = id;
         this.name = name;
+        this.content = content;
         this.price = price;
         this.stock = stock;
         this.isDeleted = isDeleted;
         this.productCategory = productCategory;
     }
 
-    public void update(UpdateProductRequestDto requestDto,ProductCategory productCategory){
+    public void update(UpdateProductRequestDto requestDto, ProductCategory productCategory) {
         this.name = requestDto.getName();
+        this.content = requestDto.getContent();
         this.price = requestDto.getPrice();
         this.stock = requestDto.getStock();
         this.productCategory = productCategory;
     }
-
 }

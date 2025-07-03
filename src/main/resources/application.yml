@@ -12,6 +12,14 @@ spring:
         period: 0
         cachecontrol:
           no-store: true
+  thymeleaf:
+    cache: false
+  devtools:
+    restart:
+      enabled: true
+      additional-paths: src/main/resources
+    livereload:
+      enabled: true
   springdoc:
     api-docs:
       path: /v3/api-docs
@@ -44,4 +52,6 @@ jwt:
 
 logging:
   level:
-    org.springframework.security: DEBUG
+    root: DEBUG
+    org.springframework: DEBUG
+    org.hibernate.SQL: DEBUG

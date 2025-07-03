@@ -22,31 +22,30 @@ public class CreateOrderRequestDto {
 
     private List<OrderProductRequestDto> orderProducts;
 
-    /**
-    public Order toOrder(String loginId){
-        return Order.builder()
+    public Order toOrderWithProducts(Users user) {
+        Order order = Order.builder()
                 .receiverName(receiverName)
                 .receiverAddress(receiverAddress)
-                .user(Users.builder().loginId(loginId).build())
-                .build();
-    }**/
-    public Order toOrder(Users user){
-        return Order.builder()
-                .receiverName(receiverName)
-                .receiverAddress(receiverAddress)
-                .user(user) // 이미 영속된 Users 객체를 설정
+                .user(user)
                 .orderStatus(OrderStatus.PENDING)
                 .build();
-    }
 
 
-    public List<OrderProduct> toOrderProducts(){
-        return orderProducts.stream()
-                .map(dto -> OrderProduct.builder()
-                        .product(Product.builder().id(dto.getProductId()).build())
-                        .count(dto.getCount())
-                        .build())
-                .collect(Collectors.toList());
+            List<OrderProduct> products = orderProducts.stream()
+                    .map(dto -> {
+                        OrderProduct orderProduct = OrderProduct.builder()
+                                .product(Product.builder().id(dto.getProductId()).build())
+                                .count(dto.getCount())
+                                .build();
+                        orderProduct.setOrder(order);
+                        return orderProduct;
+                    })
+                    .collect(Collectors.toList());
+
+            order.setOrderProducts(products);
+
+
+        return order;
     }
 
     @Builder

@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <title>쿠폰 목록</title>
+</head>
+<body>
+<h2>쿠폰 목록</h2>
+<div id="couponList"></div>
+
+<script>
+    const user = JSON.parse(localStorage.getItem("userInfo"));
+    const isAdmin = user?.role === "ROLE_ADMIN";
+    const accessToken = user?.accessToken;
+
+    window.onload = async function () {
+        try {
+            const headers = accessToken
+                ? { Authorization: "Bearer " + accessToken }
+                : {};
+
+            const res = await fetch("/coupon/all", {
+                headers: headers
+            });
+
+            const coupons = await res.json();
+            renderCoupons(coupons);
+        } catch (err) {
+            alert("쿠폰 목록을 불러오지 못했습니다.");
+        }
+    };
+
+    function renderCoupons(coupons) {
+        const listDiv = document.getElementById("couponList");
+
+        // 사용자 권한에 따라 쿠폰 필터링
+        const visibleCoupons = isAdmin
+            ? coupons // 관리자: 전체
+            : coupons.filter(coupon => coupon.couponType === "FIRST_COME_FIRST_SERVE"); // 사용자: 선착순만
+
+        if (visibleCoupons.length === 0) {
+            listDiv.innerHTML = "<p>표시할 쿠폰이 없습니다.</p>";
+            return;
+        }
+
+        const html = visibleCoupons.map(coupon => `
+            <div style="border: 1px solid gray; margin-bottom: 10px; padding: 10px;">
+                <p><strong>${coupon.name}</strong></p>
+                <p>유형: ${coupon.couponType}</p>
+                <p>유효기간: ${coupon.expiredDate}</p>
+                <p>최소 금액: ${coupon.minimumMoney}원</p>
+                <p>할인 금액: ${coupon.discountPrice}원</p>
+                <p>사용 가능 여부: ${coupon.isActive ? '사용 가능' : '만료/비활성화'}</p>
+                ${isAdmin
+            ? `<button onclick="location.href='/coupon/update?id=${coupon.id}'">수정</button>`
+            : coupon.couponType === "FIRST_COME_FIRST_SERVE" && coupon.isActive
+                ? `<button onclick="issueCoupon(${coupon.id})">쿠폰 받기</button>`
+                : ''
+        }
+            </div>
+        `).join("");
+
+        listDiv.innerHTML = html;
+    }
+
+    async function issueCoupon(couponId) {
+        if (!accessToken) {
+            alert("로그인이 필요합니다.");
+            window.location.href = "/login";
+            return;
+        }
+
+        try {
+            const res = await fetch(`/coupon/${couponId}/issue`, {
+                method: "POST",
+                headers: {
+                    "Authorization": "Bearer " + accessToken
+                }
+            });
+
+            if (res.ok) {
+                const result = await res.json();
+                alert("쿠폰 발급 성공! 쿠폰명: " + result.name);
+            } else {
+                const errorMsg = await res.text();
+                alert("쿠폰 발급 실패: " + errorMsg);
+            }
+        } catch (err) {
+            alert("오류가 발생했습니다: " + err.message);
+        }
+    }
+</script>
+</body>
+</html>

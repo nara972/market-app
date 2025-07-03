@@ -6,6 +6,7 @@ import com.group.marketapp.domain.ProductCategory;
 import com.group.marketapp.domain.ProductSearchDocument;
 import com.group.marketapp.dto.requestdto.CreateProductRequestDto;
 import com.group.marketapp.dto.requestdto.UpdateProductRequestDto;
+import com.group.marketapp.dto.responsedto.CategoryResponseDto;
 import com.group.marketapp.dto.responsedto.ProductResponseDto;
 import com.group.marketapp.repository.ProductCategoryRepository;
 import com.group.marketapp.repository.ProductRepository;
@@ -28,12 +29,31 @@ public class ProductService {
     private final ProductSearchRepository productSearchRepository;
     private final ElasticsearchClient elasticsearchClient;
 
+    //전체 상품 조회
+    public List<ProductResponseDto> getAllProducts() {
+        List<Product> products = productRepository.findAllNotDeleted();
+
+        return products.stream()
+                .map(ProductResponseDto::of)
+                .collect(Collectors.toList());
+    }
+
+    //하나의 상품 조회
     public ProductResponseDto getProduct(Long id){
         Product product = productRepository.findById(id)
                 .orElseThrow(IllegalArgumentException::new);
 
         return ProductResponseDto.of(product);
 
+    }
+
+    // 상품 등록시 DB에 저장되어 있는 카테고리 목록 불러오기
+    public List<CategoryResponseDto> getCategoryAll(){
+        List<ProductCategory> categories =categoryRepository.findAll();
+
+        return categories.stream()
+                .map(CategoryResponseDto::of)
+                .collect(Collectors.toList());
     }
 
     @Cacheable(value = "productCategoryCache", key = "#id")
@@ -47,6 +67,7 @@ public class ProductService {
 
     }
 
+    //상품 생성
     public void createProduct(CreateProductRequestDto request){
 
             ProductCategory category = categoryRepository.findById(request.getCategoryId())
@@ -54,6 +75,7 @@ public class ProductService {
 
             Product product = Product.builder()
                     .name(request.getName())
+                    .content(request.getContent())
                     .price(request.getPrice())
                     .stock(request.getStock())
                     .productCategory(category)
@@ -64,8 +86,9 @@ public class ProductService {
             syncProductToSearchDocument(product);
     }
 
-    public void updateProduct(UpdateProductRequestDto request){
-        Product product=productRepository.findById(request.getId())
+    //상품 수정
+    public void updateProduct(Long id, UpdateProductRequestDto request){
+        Product product=productRepository.findById(id)
                 .orElseThrow(IllegalArgumentException::new);
 
         ProductCategory category = categoryRepository.findById(request.getCategoryId())
@@ -97,6 +120,7 @@ public class ProductService {
                             .build())
                     .collect(Collectors.toList());
         } catch (Exception e) {
+            e.printStackTrace();
             throw new RuntimeException("Error occurred during Elasticsearch search: " + e.getMessage(), e);
         }
     }

@@ -1,14 +1,12 @@
 package com.group.marketapp.service;
 
-import com.group.marketapp.domain.Coupon;
-import com.group.marketapp.domain.CouponType;
-import com.group.marketapp.domain.ReceivedCoupon;
+import com.group.marketapp.domain.*;
 import com.group.marketapp.dto.requestdto.CreateCouponRequestDto;
 import com.group.marketapp.dto.requestdto.UpdateCouponRequestDto;
 import com.group.marketapp.dto.responsedto.CouponResponseDto;
+import com.group.marketapp.dto.responsedto.ProductResponseDto;
 import com.group.marketapp.repository.CouponRepository;
 import com.group.marketapp.repository.ReceivedCouponRepository;
-import com.group.marketapp.domain.Users;
 import com.group.marketapp.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.redisson.api.RLock;
@@ -60,14 +58,35 @@ public class CouponService {
         }
     }
 
-    public List<CouponResponseDto> getCoupon(){
+    // 쿠폰 상세 조회
+    public CouponResponseDto getCoupon(Long id){
+        Coupon coupon = couponRepository.findById(id)
+                .orElseThrow(IllegalArgumentException::new);
+
+        return CouponResponseDto.of(coupon);
+
+    }
+
+    // 로그인하지 않은 사용자 또는 일반 사용자
+    public List<CouponResponseDto> getActiveCoupons() {
+        return couponRepository.findByIsActiveTrue().stream()
+                .map(CouponResponseDto::of)
+                .collect(Collectors.toList());
+    }
+
+    // 관리자만 전체 쿠폰 조회 가능
+    public List<CouponResponseDto> getAllCoupons(String loginId) {
+        Users user = userRepository.findByLoginId(loginId)
+                .orElseThrow(() -> new IllegalArgumentException("User not found"));
+
         return couponRepository.findAll().stream()
                 .map(CouponResponseDto::of)
                 .collect(Collectors.toList());
     }
 
-    public void updateCoupon(UpdateCouponRequestDto request){
-        Coupon coupon=couponRepository.findById(request.getId()).orElseThrow(IllegalArgumentException::new);
+
+    public void updateCoupon(Long id,UpdateCouponRequestDto request){
+        Coupon coupon=couponRepository.findById(id).orElseThrow(IllegalArgumentException::new);
 
         if(coupon.getCouponType()==CouponType.FIRST_COME_FIRST_SERVE){
             if(request.getQuantity()==null || request.getQuantity()<=0){
@@ -84,6 +103,8 @@ public class CouponService {
                 redisTemplate.opsForList().leftPush(COUPON_QUEUE,String.valueOf(coupon.getId()));
             }
         }
+
+        System.out.println("서비스에서 받은 isActive: " + coupon.isActive());
     }
 
     @Scheduled(cron = "0 0 12 * * *")

@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <title>상품 등록</title>
+</head>
+<body>
+<h1>상품 등록</h1>
+
+<form id="product-form">
+    <label>상품명: <input type="text" name="name" required></label><br>
+    <label>설명: <textarea name="content"></textarea></label><br>
+    <label>가격: <input type="number" name="price" required></label><br>
+    <label>재고: <input type="number" name="stock" required></label><br>
+
+    <label>상위 카테고리:
+        <select id="parent-category" required>
+            <option value="">선택</option>
+        </select>
+    </label><br>
+
+    <label>하위 카테고리:
+        <select id="child-category" name="categoryId" required>
+            <option value="">선택</option>
+        </select>
+    </label><br>
+
+    <button type="submit">등록</button>
+</form>
+
+<script>
+    let categories = [];
+
+    async function fetchCategories() {
+        const res = await fetch('/product/categories');
+        categories = await res.json();
+
+        console.log(categories);
+
+        const parentSelect = document.getElementById('parent-category');
+        const parentCategories = categories.filter(cat => cat.parentId === null);
+
+        parentCategories.forEach(cat => {
+            const option = document.createElement('option');
+            option.value = cat.id;
+            option.textContent = cat.name;
+            parentSelect.appendChild(option);
+        });
+
+        parentSelect.addEventListener('change', handleParentChange);
+    }
+
+    function handleParentChange(e) {
+        const parentId = parseInt(e.target.value);
+        const childSelect = document.getElementById('child-category');
+        childSelect.innerHTML = '<option value="">선택</option>';
+
+        const childCategories = categories.filter(cat => cat.parentId === parentId);
+        childCategories.forEach(cat => {
+            const option = document.createElement('option');
+            option.value = cat.id;
+            option.textContent = cat.name;
+            childSelect.appendChild(option);
+        });
+    }
+
+    document.getElementById('product-form').addEventListener('submit', async function (e) {
+        e.preventDefault();
+
+        const formData = new FormData(this);
+
+        const data = {
+            name: formData.get('name'),
+            content: formData.get('content'),
+            price: Number(formData.get('price')),
+            stock: Number(formData.get('stock')),
+            product_category_id: Number(formData.get('categoryId')),
+            isDeleted: false
+        };
+
+        const userInfo = JSON.parse(localStorage.getItem('userInfo'));
+        const token = userInfo.accessToken;
+
+        const res = await fetch('/admin/product/create', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${token}`
+            },
+            body: JSON.stringify(data)
+        });
+
+        if (res.ok) {
+            alert('상품이 등록되었습니다!');
+            location.href = '/';
+        } else {
+            alert('상품 등록에 실패했습니다.');
+        }
+    });
+
+    fetchCategories();
+</script>
+</body>
+</html>

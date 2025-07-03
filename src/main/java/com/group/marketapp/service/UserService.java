@@ -66,6 +66,11 @@ public class UserService {
 
         UserResponseDto tokenInfo = jwtTokenProvider.generateToken(authentication);
 
+        tokenInfo.setUsername(user.getUsername());
+        tokenInfo.setRole(user.getRole());
+
+        log.info("tokenInfo : {}", tokenInfo);
+
         redisTemplate.opsForValue().set("RT:"+authentication.getName(),tokenInfo.getRefreshToken()
                 ,tokenInfo.getRefreshTokenExpirationTime(), TimeUnit.MILLISECONDS);
 

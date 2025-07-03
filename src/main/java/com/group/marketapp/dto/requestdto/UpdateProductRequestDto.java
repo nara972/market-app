@@ -6,9 +6,9 @@ import lombok.Data;
 @Data
 public class UpdateProductRequestDto {
 
-    private Long id;
-
     private String name;
+
+    private String content;
 
     private int price;
 

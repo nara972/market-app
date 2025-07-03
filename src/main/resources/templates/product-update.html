@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <title>상품 수정</title>
+</head>
+<body>
+<h2>상품 수정</h2>
+<form id="updateForm">
+    <label>상품명: <input type="text" id="name" name="name" required></label><br>
+    <label>설명: <textarea id="content" name="content"></textarea></label><br>
+    <label>가격: <input type="number" id="price" name="price" required></label><br>
+    <label>재고: <input type="number" id="stock" name="stock" required></label><br>
+
+    <label>상위 카테고리:
+        <select id="parent-category" required>
+            <option value="">선택</option>
+        </select>
+    </label><br>
+
+    <label>하위 카테고리:
+        <select id="child-category" name="categoryId" required>
+            <option value="">선택</option>
+        </select>
+    </label><br>
+
+    <button type="submit">수정</button>
+</form>
+
+<script>
+    let categories = [];
+    let currentCategoryId = null;
+
+    const params = new URLSearchParams(window.location.search);
+    const id = params.get('id');
+    const userInfo = JSON.parse(localStorage.getItem('userInfo'));
+    const token = userInfo?.accessToken;
+
+    async function fetchCategories() {
+        const res = await fetch('/product/categories');
+        categories = await res.json();
+
+        const parentSelect = document.getElementById('parent-category');
+        const parentCategories = categories.filter(cat => cat.parentId === null);
+
+        parentCategories.forEach(cat => {
+            const option = document.createElement('option');
+            option.value = cat.id;
+            option.textContent = cat.name;
+            parentSelect.appendChild(option);
+        });
+
+        parentSelect.addEventListener('change', handleParentChange);
+    }
+
+    function handleParentChange(e) {
+        const parentId = parseInt(e.target.value);
+        const childSelect = document.getElementById('child-category');
+        childSelect.innerHTML = '<option value="">선택</option>';
+
+        const childCategories = categories.filter(cat => cat.parentId === parentId);
+        childCategories.forEach(cat => {
+            const option = document.createElement('option');
+            option.value = cat.id;
+            option.textContent = cat.name;
+            childSelect.appendChild(option);
+        });
+
+        // 값 자동 선택
+        if (currentCategoryId) {
+            childSelect.value = currentCategoryId;
+        }
+    }
+
+    async function fetchProductDetail() {
+        const res = await fetch(`/product/detail/${id}`);
+        const p = await res.json();
+
+        document.getElementById('name').value = p.name;
+        document.getElementById('content').value = p.content || '';
+        document.getElementById('price').value = p.price;
+        document.getElementById('stock').value = p.stock;
+        currentCategoryId = p.categoryId;
+
+        // 카테고리 셀렉트 설정
+        const childCategory = categories.find(cat => cat.id === p.categoryId);
+        if (childCategory) {
+            const parentCategory = categories.find(cat => cat.id === childCategory.parentId);
+            if (parentCategory) {
+                document.getElementById('parent-category').value = parentCategory.id.toString();
+                handleParentChange({ target: { value: parentCategory.id.toString() } });
+            }
+        }
+    }
+
+    document.getElementById('updateForm').addEventListener('submit', async function (e) {
+        e.preventDefault();
+
+        const categoryId = parseInt(document.getElementById('child-category').value);
+        if (isNaN(categoryId)) {
+            alert('카테고리를 선택하세요.');
+            return;
+        }
+
+        const data = {
+            name: document.getElementById('name').value,
+            content: document.getElementById('content').value,
+            price: parseInt(document.getElementById('price').value),
+            stock: parseInt(document.getElementById('stock').value),
+            product_category_id: categoryId,
+            isDeleted: false
+        };
+
+        console.log("전송할 카테고리 ID:", categoryId);
+        console.log("전송 데이터:", data);
+
+        try {
+            const res = await fetch(`/admin/product/update/${id}`, {
+                method: 'PUT',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${token}`
+                },
+                body: JSON.stringify(data)
+            });
+
+            if (res.ok) {
+                alert('수정 완료');
+                location.href = '/product/list';
+            } else {
+                const errText = await res.text();
+                console.error("서버 응답:", errText);
+                alert('수정 실패: ' + errText);
+            }
+        } catch (err) {
+            alert('에러 발생: ' + err.message);
+        }
+    });
+
+    async function initialize() {
+        await fetchCategories();
+        await fetchProductDetail();
+    }
+
+    initialize();
+</script>
+</body>
+</html>
