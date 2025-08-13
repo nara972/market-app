@@ -1,8 +1,10 @@
 version: '3.9'
 
 services:
-  spring-app:
-    build: .
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
     container_name: spring-app
     ports:
       - "8080:8080"
@@ -14,11 +16,6 @@ services:
         condition: service_started
       elasticsearch:
         condition: service_started
-    volumes:
-      - ./src:/app/src
-      - ./build/classes/java/main:/app/build/classes/java/main
-      - ./build/resources/main:/app/build/resources/main
-      - ./src/main/resources/templates:/app/build/resources/main/templates
     environment:
       JAVA_OPTS: "-agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=*:5005"
       SPRING_DATASOURCE_URL: jdbc:mysql://db:3306/market
@@ -31,6 +28,26 @@ services:
     networks:
       - app-network
 
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    container_name: react-app
+    ports:
+      - "3000:3000"
+    volumes:
+      - ./frontend:/app
+      - /app/node_modules
+    stdin_open: true
+    tty: true
+    depends_on:
+      - backend
+    environment:
+      - CHOKIDAR_USEPOLLING=true
+      - WATCHPACK_POLLING=true
+    command: npm run dev
+    networks:
+      - app-network
   db:
     image: mysql:8
     container_name: mysql
