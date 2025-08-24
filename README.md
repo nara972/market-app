@@ -41,7 +41,7 @@
 
 - Java, SpringBoot, Spring Security
 - JPA, MySQL
-- JavaScript
+- TypeScript, React.js
 - Redis, Elasticsearch
 - Docker
 - Swagger
