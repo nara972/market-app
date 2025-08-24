@@ -6,3 +6,4 @@ export const getAllCategories = async (): Promise<Category[]> => {
     if (!res.ok) throw new Error("카테고리를 불러오지 못했습니다.");
     return res.json();
 };
+

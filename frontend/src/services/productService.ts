@@ -7,6 +7,13 @@ export const getAllProducts = async (): Promise<ProductList[]> => {
     return res.json();
 };
 
+/** 카테고리별 상품 조회 - GET /product/category/{categoryId} **/
+export const getProductsByCategoryId = async (categoryId : number): Promise<ProductList[]> => {
+    const res = await fetch(`/product/category/${categoryId}`);
+    if (!res.ok) throw new Error("상품 목록을 불러오지 못했습니다.");
+    return res.json();
+}
+
 /** 상품 상세 조회 - GET /product/detail/{id}  */
 export const getProductDetail = async (id: number | string): Promise<ProductResponse> => {
     const res = await fetch(`/product/detail/${id}`);

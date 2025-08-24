@@ -1,0 +1,40 @@
+.catnav { background: #111; color: #fff; }
+.catnav-inner { display: flex; gap: 16px; padding: 10px 16px; position: relative; }
+.catnav-item { position: relative; }
+
+.catnav-parent {
+    background: transparent;
+    border: none;
+    color: #fff;
+    cursor: pointer;
+    padding: 8px 10px;
+    font-size: 14px;
+    border-radius: 8px;
+}
+.catnav-parent:hover { background: rgba(255,255,255,0.08); }
+
+.catnav-dropdown {
+    position: absolute;
+    top: 36px; left: 0;
+    background: #fff; color: #111;
+    border: 1px solid #e5e5e5;
+    border-radius: 10px;
+    min-width: 200px;
+    padding: 8px;
+    display: none;
+    box-shadow: 0 10px 24px rgba(0,0,0,0.15);
+    z-index: 20;
+}
+.catnav-dropdown.show { display: block; }
+
+.catnav-child {
+    width: 100%;
+    text-align: left;
+    padding: 8px 10px;
+    border: none;
+    background: transparent;
+    cursor: pointer;
+    border-radius: 8px;
+    font-size: 14px;
+}
+.catnav-child:hover { background: #f6f6f6; }

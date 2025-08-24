@@ -4,7 +4,7 @@ export interface ProductList {
     name: string;
     price: number;
     stock: number;
-    categoryName?: string;
+    categoryName: string;
     isDeleted: boolean;
 }
 
@@ -15,7 +15,7 @@ export interface ProductResponse {
     price: number;
     stock: number;
     categoryId: number;
-    categoryName?: string;
+    categoryName: string;
     content: string;
     isDeleted: boolean;
 }
