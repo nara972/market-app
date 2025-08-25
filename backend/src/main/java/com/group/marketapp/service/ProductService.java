@@ -105,10 +105,10 @@ public class ProductService {
         deleteProductFromSearch(id);
     }
 
-    public List<ProductResponseDto> searchProducts(String keyword, int minPrice, int maxPrice, String orderBy) {
+    public List<ProductResponseDto> searchProducts(String keyword) {
         try {
             List<ProductSearchDocument> searchResults =
-                    productSearchRepository.searchByKeywordAndPrice(keyword, minPrice, maxPrice, orderBy);
+                    productSearchRepository.searchByKeyword(keyword);
 
             return searchResults.stream()
                     .map(doc -> ProductResponseDto.builder()

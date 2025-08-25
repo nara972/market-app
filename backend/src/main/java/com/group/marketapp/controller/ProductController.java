@@ -108,12 +108,8 @@ public class ProductController {
     )
     @CrossOrigin(origins = "*")
     @GetMapping("/product/search")
-    public ResponseEntity<List<ProductResponseDto>> searchProducts(
-            @RequestParam String keyword,
-            @RequestParam(defaultValue = "0") int minPrice,
-            @RequestParam(defaultValue = "1000000") int maxPrice,
-            @RequestParam(defaultValue = "asc") String orderBy) {
-        List<ProductResponseDto> results = productService.searchProducts(keyword, minPrice, maxPrice, orderBy);
+    public ResponseEntity<List<ProductResponseDto>> searchProducts(@RequestParam String keyword) {
+        List<ProductResponseDto> results = productService.searchProducts(keyword);
         return ResponseEntity.ok(results);
     }
 

@@ -52,7 +52,6 @@ const Layout = ({ children }: LayoutProps) => {
         window.location.replace("/");
     };
 
-    // ✅ 모든 Hook은 컴포넌트 최상위에서 호출
     const { parentCategories, childrenOf, error } = useCategories();
     const [openParentId, setOpenParentId] = useState<number | null>(null);
     const navigate = useNavigate();
@@ -118,9 +117,19 @@ const Layout = ({ children }: LayoutProps) => {
                             Market
                         </Navbar.Brand>
 
-                        <Form className="d-flex mx-3 flex-grow-1" style={{ maxWidth: "500px" }}>
+                        <Form
+                            className="d-flex mx-3 flex-grow-1"
+                            style={{ maxWidth: "500px" }}
+                            onSubmit={(e) => {
+                                e.preventDefault();
+                                const input = (e.currentTarget.elements[0] as HTMLInputElement).value;
+                                if (input.trim()) {
+                                    navigate(`/product/search?keyword=${encodeURIComponent(input)}`);
+                                }
+                            }}
+                        >
                             <FormControl type="search" placeholder="검색어를 입력하세요" className="me-2" />
-                            <Button variant="outline-secondary">검색</Button>
+                            <Button variant="outline-secondary" type="submit">검색</Button>
                         </Form>
 
                         <div className="d-flex align-items-center">

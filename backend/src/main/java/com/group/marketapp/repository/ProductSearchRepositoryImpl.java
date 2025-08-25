@@ -22,37 +22,21 @@ public class ProductSearchRepositoryImpl implements ProductSearchRepositoryCusto
     private final ElasticsearchClient elasticsearchClient;
 
     @Override
-    public List<ProductSearchDocument> searchByKeywordAndPrice(String keyword, int minPrice, int maxPrice, String orderBy) {
+    public List<ProductSearchDocument> searchByKeyword(String keyword) {
+        // 상품명 OR 카테고리명 매칭
         Query boolQuery = QueryBuilders.bool()
-                .must(QueryBuilders.bool()
-                        .should(QueryBuilders.match().field("name").query(keyword).build()._toQuery())
-                        .should(QueryBuilders.match().field("categoryName").query(keyword).build()._toQuery())
-                        .build()._toQuery())
-                .filter(QueryBuilders.range()
-                        .field("price")
-                        .gte(JsonData.of(minPrice))
-                        .lte(JsonData.of(maxPrice))
-                        .build()._toQuery())
+                .should(QueryBuilders.match().field("name").query(keyword).build()._toQuery())
+                .should(QueryBuilders.match().field("categoryName").query(keyword).build()._toQuery())
                 .build()._toQuery();
 
-        SortOptions sortOptions = SortOptions.of(s -> s
-                .field(f -> f
-                        .field("price")
-                        .order(orderBy.equalsIgnoreCase("asc") ? SortOrder.Asc : SortOrder.Desc)
-                )
-        );
-
         SearchRequest searchRequest = new SearchRequest.Builder()
-                .index("products")
+                .index("products")   // products 인덱스에서 검색
                 .query(boolQuery)
-                .sort(sortOptions)
                 .build();
 
         try {
-            SearchResponse<ProductSearchDocument> searchResponse = elasticsearchClient.search(
-                    searchRequest,
-                    ProductSearchDocument.class
-            );
+            SearchResponse<ProductSearchDocument> searchResponse =
+                    elasticsearchClient.search(searchRequest, ProductSearchDocument.class);
 
             return searchResponse.hits().hits().stream()
                     .map(hit -> hit.source())

@@ -8,6 +8,8 @@ import ProductManage from "./pages/product/ProductManage";
 import ProductCreate from "./pages/product/ProductCreate";
 import ProductDetail from "./pages/ProductDetail";
 import ProductUpdate from "./pages/product/ProductUpdate";
+import ProductCategoryList from "./pages/product/ProductCategoryList";
+import ProductSearchList from "./pages/product/ProductSearchList";
 import CouponManage from "./pages/coupon/CouponManage";
 import CouponCreate from "./pages/coupon/CouponCreate";
 import CouponUpdate from "./pages/coupon/CouponUpdate";
@@ -25,6 +27,8 @@ const App: React.FC = () => {
           <Route path="/product/create" element={<ProductCreate />} />
           <Route path="/product/detail" element={<ProductDetail />} />
           <Route path="/product/update" element={<ProductUpdate />} />
+          <Route path="/product/category" element={<ProductCategoryList />} />
+          <Route path="/product/search" element={<ProductSearchList />} />
           <Route path="/coupon/manage" element={<CouponManage />} />
           <Route path="/coupon/create" element={<CouponCreate />} />
           <Route path="/coupon/update" element={<CouponUpdate />} />
